@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 from api_service import get_all_dist_codes, get_filtered_dists, get_dist_vaccination_calendar, get_dist_id_from_name
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 
 @app.route('/districts', methods=['GET'])
