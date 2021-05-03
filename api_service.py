@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
 from urllib.parse import urljoin
 
@@ -37,6 +37,13 @@ def get_all_dist_codes():
     return dist_codes
 
 
+@lru_cache()
+def get_dist_id_from_name(dist_name):
+    dist_codes = get_all_dist_codes()
+    name_code_dict = dict((d["dist_name"], d["dist_id"]) for d in dist_codes)
+    return name_code_dict.get(dist_name)
+
+
 def get_filtered_dists(search_query):
     dist_codes = get_all_dist_codes()
 
@@ -49,10 +56,10 @@ def get_filtered_dists(search_query):
     return filtered_dists
 
 
-def get_dist_vaccination_calendar(dist_id):
+def get_dist_vaccination_calendar_by_date(dist_id, date):
     url = r"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict"
     params = {"district_id": dist_id,
-              "date": "15-05-2021"}
+              "date": date}
 
     response = requests.get(url, params=params)
     data = response.json()
@@ -86,5 +93,19 @@ def get_dist_vaccination_calendar(dist_id):
     return slots
 
 
+def get_dist_vaccination_calendar(dist_id):
+    date_today = datetime.today()
+    slots = []
+
+    date = date_today
+
+    for i in range(4):
+        date = date + timedelta(days=i * 8)
+        date_string = datetime.strftime(date, '%d-%m-%Y')
+        print(date_string, "\n")
+        week_slots = get_dist_vaccination_calendar_by_date(dist_id, date_string)
+        slots = slots + week_slots
+
+    return slots
 
 # print(get_dist_vaccination_calendar("512")[0])

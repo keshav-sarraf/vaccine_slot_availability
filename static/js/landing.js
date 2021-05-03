@@ -21,6 +21,7 @@ $('.basicAutoComplete').autoComplete({
 $('.basicAutoComplete').on('autocomplete.select', function (evt, item) {
     console.log("item selected - " + item);
     selectedDistrict = item.split("|")[0].trim();
+    $("#slots-table").bootstrapTable('destroy');
     refreshTable(selectedDistrict);
 });
 

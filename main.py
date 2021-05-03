@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template, request
-from api_service import get_all_dist_codes, get_filtered_dists, get_dist_vaccination_calendar
+from api_service import get_all_dist_codes, get_filtered_dists, get_dist_vaccination_calendar, get_dist_id_from_name
 
 app = Flask(__name__)
 
@@ -12,9 +12,11 @@ def get_districts():
     return jsonify(filtered_dists_list)
 
 
-@app.route('/slots/district/<dist_id>')
-def get_vaccination_slots(dist_id):
-    vaccination_calendar = get_dist_vaccination_calendar("512")
+@app.route('/slots/district/<dist_name>')
+def get_vaccination_slots(dist_name):
+
+    dist_id = get_dist_id_from_name(dist_name)
+    vaccination_calendar = get_dist_vaccination_calendar(str(dist_id))
     return jsonify(vaccination_calendar)
 
 
