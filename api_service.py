@@ -1,10 +1,12 @@
 import json
-import os
 from datetime import datetime, timedelta
 from functools import lru_cache
-from urllib.parse import urljoin
-
+import logging
 import requests
+
+logging.basicConfig(level=logging.DEBUG)
+
+
 
 
 # TODO: fix this
