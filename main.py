@@ -1,21 +1,21 @@
 from flask import Flask, jsonify, render_template, request
-from api_service import get_all_dist_codes, get_filtered_dists
+from api_service import get_all_dist_codes, get_filtered_dists, get_dist_vaccination_calendar
 
 app = Flask(__name__)
-
-
-@app.route('/district/<dist_name>', methods=['GET'])
-def get_slots(dist_name):
-    return "Hello World" + dist_name
 
 
 @app.route('/districts', methods=['GET'])
 def get_districts():
     query = request.args.get('q')
     filtered_dists = get_filtered_dists(query)
-    print(filtered_dists)
     filtered_dists_list = list(map(lambda x: "{} | {}".format(x["dist_name"], x["state_name"]), filtered_dists))
     return jsonify(filtered_dists_list)
+
+
+@app.route('/slots/district/<dist_id>')
+def get_vaccination_slots(dist_id):
+    vaccination_calendar = get_dist_vaccination_calendar("512")
+    return jsonify(vaccination_calendar)
 
 
 @app.route('/')
