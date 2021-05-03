@@ -80,11 +80,12 @@ def get_dist_vaccination_calendar_by_date(dist_id, date):
         for session in center_info["sessions"]:
             datetimeobject = datetime.strptime(session["date"], '%d-%m-%Y')
             new_format = datetimeobject.strftime('%d%b')
+            min_age_limit = session["min_age_limit"]
 
             session_info = {
                 "date": new_format,
-                "available_capacity": session["available_capacity"],
-                "min_age_limit": session["min_age_limit"]
+                "capacity_18_above": session["available_capacity"] if min_age_limit == 18 else 0,
+                "capacity_45_above": session["available_capacity"] if min_age_limit == 45 else 0,
             }
 
             combined_info = {**slot_info, **session_info}
