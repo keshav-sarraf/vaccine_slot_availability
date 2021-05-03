@@ -13,6 +13,7 @@ import requests
 def get_all_state_codes():
     headers = {'Content-type': 'application/json', 'accept': 'application/json', 'Accept-Language': 'hi_IN'}
     response = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states", headers=headers)
+    print(response.json())
     json_data = response.json()["states"]
     return json_data
 
@@ -27,6 +28,7 @@ def get_all_dist_codes():
         print("State: ", state)
         response = requests.get(
             "https://cdn-api.co-vin.in/api/v2/admin/location/districts/{}".format(state["state_id"]))
+        print(response.json())
         json_data = json.loads(response.text)
         for dist_info in json_data["districts"]:
             dist_codes.append({"dist_id": dist_info["district_id"],
