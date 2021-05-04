@@ -4,6 +4,9 @@ from utils import get_filtered_dists
 
 app = Flask(__name__, static_url_path='/static')
 
+# To run first thing and cache the results
+get_all_dist_codes_db()
+
 
 @app.route('/districts', methods=['GET'])
 def get_districts():
