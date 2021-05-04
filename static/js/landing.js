@@ -1,5 +1,8 @@
 console.log("Landing Page.JS Called");
 
+var selectedDistrict = null;
+var selectedState = null;
+
 function refreshTable(selectedDistrict){
     $.get("/slots/district/" + selectedDistrict, function(response){
 //        console.log(response)
@@ -21,10 +24,14 @@ $('.basicAutoComplete').autoComplete({
 $('.basicAutoComplete').on('autocomplete.select', function (evt, item) {
     console.log("item selected - " + item);
     selectedDistrict = item.split("|")[0].trim();
+    selectedState = item.split("|")[1].trim();
+    selectedPincode = "";
+
+    $("#slots-table").show();
     $("#slots-table").bootstrapTable('destroy');
     refreshTable(selectedDistrict);
+    $("#subscription-div").show();
 });
-
 
 var firebaseConfig = {
     apiKey: "AIzaSyCLaNNU4xvbXDG412usAzm_woTz3HzTcUA",
@@ -55,13 +62,17 @@ navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
     if (currentToken) {
         console.log("Token Available \n");
         console.log(currentToken);
+        saveToken(currentToken);
+        setTokenSentToServer(true);
         //store in session, send to backend in case the user subscribes to updates
     } else {
         // Show permission request UI
         console.log('No registration token available. Request permission to generate one.');
+        setTokenSentToServer(false);
     }
 }).catch((err) => {
         console.log('An error occurred while retrieving token. ', err);
+        setTokenSentToServer(false);
 });
 
 messaging.onMessage((payload) => {
@@ -72,4 +83,22 @@ messaging.onMessage((payload) => {
 });
 
 $(".toast").toast({ autohide: false });
+$("#slots-table").hide();
+$("#subscription-div").hide();
 //https://stackoverflow.com/questions/58146752/firebase-cloud-messaging-web-not-receiving-test-messages
+
+function setTokenSentToServer(sent) {
+    window.localStorage.setItem('sentTokenToServer', sent ? 1 : 0);
+}
+
+function isTokenSentToServer(){
+    return window.localStorage.getItem('sentTokenToServer') == 1;
+}
+function saveToken(token){
+   myToken = token;
+   window.localStorage.setItem('myToken', token);
+}
+
+function getToken(){
+    return window.localStorage.getItem('myToken');
+}

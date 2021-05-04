@@ -51,6 +51,7 @@ def get_dist_id_from_name(dist_name):
 
 def get_filtered_dists(search_query):
     dist_codes = get_all_dist_codes()
+    search_query = search_query.lower()
 
     if search_query:
         filtered_dists = list(filter(lambda x: search_query in x['dist_name'].lower()
@@ -71,7 +72,7 @@ def get_dist_vaccination_calendar_by_date(dist_id, date):
 
     slots = []
 
-    print(data)
+    # print(data)
 
     for center_info in data["centers"]:
         slot_info = {
@@ -106,11 +107,11 @@ def get_dist_vaccination_calendar(dist_id):
     date = date_today
 
     for i in range(4):
-        date = date + timedelta(days=i * 8)
         date_string = datetime.strftime(date, '%d-%m-%Y')
         print(date_string, "\n")
         week_slots = get_dist_vaccination_calendar_by_date(dist_id, date_string)
         slots = slots + week_slots
+        date = date + timedelta(days=8)
 
     return slots
 

@@ -1,84 +1,106 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
     <link href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css" rel="stylesheet">
     <title>Vaccine Slots Notifier</title>
-  </head>
-  <body>
-    <div class="jumbotron jumbotron-fluid">
-      <div class="container">
+</head>
+<body>
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
         <h1 class="display-4"></h1>
         <p class="lead">
             App to show available slots for vaccination and notifies when something gets available
         </p>
-      </div>
     </div>
+</div>
 
-    <div class="container">
-      <input class="form-control basicAutoComplete" type="text" placeholder="Search for your district" autocomplete="on">
-        <div>
-            <table id="slots-table"
-                   class="table table-striped"
-                   data-filter-control="true"
-                   data-mobile-responsive="true">
-                <thead>
-                    <tr>
-                        <th data-field="date" data-filter-control="select" data-sortable="true">Date</th>
-                        <th data-field="center_name" data-filter-control="select">Center</th>
-                        <th data-field="capacity_18_above" data-sortable="true">Available Capacity 18+</th>
-                        <th data-field="capacity_45_above" data-sortable="true">Available Capacity 45+</th>
-<!--                        <th data-field="state_name" data-filter-control="select">State</th>-->
-<!--                        <th data-field="dist_name" data-filter-control="select">District</th>-->
-                        <th data-field="block_name" data-filter-control="select">Block</th>
-                        <th data-field="pincode" data-filter-control="select">Pincode</th>
-                    </tr>
-                </thead>
-            </table>
+<div class="container">
+    <input class="form-control basicAutoComplete" type="text" placeholder="Search for your district" autocomplete="on">
+    <div id="subscription-div" class="border mt-5 mb-5">
+
+        <p class="lead">
+            You can get a notification when slots would be available.
+        </p>
+
+        <div class="form-group">
+            <label for="ageGroupSelector">Select Age Group</label>
+            <select class="form-control" id="ageGroupSelector">
+                <option>18-44</option>
+                <option>45 and Above</option>
+            </select>
         </div>
 
-        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; right: 0;">
-            <div class="toast-header">
+        <button class="btn btn-primary">Notify Me</button>
+
+    </div>
+
+    <div>
+        <table id="slots-table"
+               class="table table-striped"
+               data-filter-control="true"
+               data-mobile-responsive="true"
+               data-hide-unused-select-options="true"
+               data-show-search-clear-button="true">
+            <thead>
+            <tr>
+                <th data-field="date" data-filter-control="select" data-sortable="true">Date</th>
+                <th data-field="center_name" data-filter-control="select">Center</th>
+                <th data-field="capacity_18_above" data-sortable="true">Available Capacity 18+</th>
+                <th data-field="capacity_45_above" data-sortable="true">Available Capacity 45+</th>
+                <!--                        <th data-field="state_name" data-filter-control="select">State</th>-->
+                <!--                        <th data-field="dist_name" data-filter-control="select">District</th>-->
+                <th data-field="block_name" data-filter-control="select">Block</th>
+                <th data-field="pincode" data-filter-control="select">Pincode</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true"
+         style="position: absolute; top: 0; right: 0;">
+        <div class="toast-header">
             <strong class="mr-auto" id="toast-title">Bootstrap</strong>
             <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+                <span aria-hidden="true">&times;</span>
             </button>
-          </div>
-          <div class="toast-body" id="toast-body">
+        </div>
+        <div class="toast-body" id="toast-body">
             Hello, world! This is a toast message.
-          </div>
+        </div>
+    </div>
+
 </div>
 
 
-
-    </div>
-
+</div>
 
 
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/xcash/bootstrap-autocomplete@v2.3.5/dist/latest/bootstrap-autocomplete.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/mobile/bootstrap-table-mobile.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/multiple-sort/bootstrap-table-multiple-sort.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-messaging.js"></script>
+<script defer type=text/javascript src="{{url_for('static', filename='js/landing.js') }}"></script>
 
 
-
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/gh/xcash/bootstrap-autocomplete@v2.3.5/dist/latest/bootstrap-autocomplete.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/mobile/bootstrap-table-mobile.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/multiple-sort/bootstrap-table-multiple-sort.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-analytics.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-messaging.js"></script>
-    <script defer type=text/javascript src="{{url_for('static', filename='js/landing.js') }}"></script>
-
-
-  </body>
+</body>
 </html>

@@ -42,5 +42,14 @@ for notification:
     
 '''
 
+#TODO: change api to pick from firestore
+#TODO: create apis to refresh firestore periodically
+#TODO: create api to accept pin code
+#TODO: create api to accept coordinates
+#TODO: create api to accept subscription
+#TODO: create job to send notification if slots available
+#TODO: remove from list after sending notification
+#TODO: if sharing url with location, then populate the list automatically
+
 if __name__ == '__main__':
     app.run(debug=True)
