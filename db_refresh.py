@@ -2,13 +2,11 @@ import time
 import random
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
-from db_service import _get_slot_document_key, send_notification
-import firebase_admin
-from firebase_admin import credentials, firestore
+from db_service import _get_slot_document_key, send_notification, db
 
 
-def _refresh_dist(dist_id):
-    slots = get_dist_vaccination_calendar(dist_id)
+def _refresh_dist(dist_id_to_refresh):
+    slots = get_dist_vaccination_calendar(dist_id_to_refresh)
 
     info = "{} | {} | {} ".format(dist_info["state_name"], dist_info["dist_name"], len(slots))
     print(info)
@@ -23,12 +21,8 @@ def _refresh_dist(dist_id):
         dist_name = dist_info["dist_name"]
         date = slots[0]["date"]
         num_slots = slots[0]["capacity_18_above"]
-        send_notification(dist_id, dist_name, date, num_slots)
+        send_notification(dist_id_to_refresh, dist_name, date, num_slots)
 
-
-cred = credentials.Certificate("vaccineslotavailability-firebase-adminsdk-6jiff-78515b332d.json")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
 
 dist_info_list = get_all_dist_codes_api()
 dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
