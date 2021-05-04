@@ -4,7 +4,7 @@ from functools import lru_cache
 import logging
 import requests
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 resp = requests.get("http://ip-api.com/json")
 print(resp.json())

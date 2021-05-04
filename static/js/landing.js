@@ -33,6 +33,43 @@ $('.basicAutoComplete').on('autocomplete.select', function (evt, item) {
     $("#subscription-div").show();
 });
 
+$("#notificationBtn").click(function(){
+    //get the token
+    notificationToken = getToken();
+
+    if(notificationToken == null){
+        alert("Unable to subscribe, please check the details section for probable reasons");
+        return;
+    }
+
+    var ageGroup = $('#ageGroupSelector').find(":selected").text();
+    console.log(ageGroup);
+
+    requestBody = {
+        "notification_token" : notificationToken,
+        'age_group' : ageGroup,
+        'state_name' : selectedState,
+        'dist_name' : selectedDistrict,
+        'pincode' : selectedPincode,
+    };
+
+    $.ajax( "/notification-subscription", {
+    data : JSON.stringify(requestBody),
+    contentType : 'application/json',
+    type : 'POST',
+    success : function( response ) {
+        console.log(response);
+    }
+    });
+
+    //send ajax request
+});
+
+$(".toast").toast({ autohide: false });
+$("#slots-table").hide();
+$("#subscription-div").hide();
+
+//Firebase related stuff
 var firebaseConfig = {
     apiKey: "AIzaSyCLaNNU4xvbXDG412usAzm_woTz3HzTcUA",
     authDomain: "vaccineslotavailability.firebaseapp.com",
@@ -63,16 +100,13 @@ navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
         console.log("Token Available \n");
         console.log(currentToken);
         saveToken(currentToken);
-        setTokenSentToServer(true);
         //store in session, send to backend in case the user subscribes to updates
     } else {
         // Show permission request UI
         console.log('No registration token available. Request permission to generate one.');
-        setTokenSentToServer(false);
     }
 }).catch((err) => {
         console.log('An error occurred while retrieving token. ', err);
-        setTokenSentToServer(false);
 });
 
 messaging.onMessage((payload) => {
@@ -82,20 +116,9 @@ messaging.onMessage((payload) => {
   $('.toast').toast('show');
 });
 
-$(".toast").toast({ autohide: false });
-$("#slots-table").hide();
-$("#subscription-div").hide();
 //https://stackoverflow.com/questions/58146752/firebase-cloud-messaging-web-not-receiving-test-messages
 
-function setTokenSentToServer(sent) {
-    window.localStorage.setItem('sentTokenToServer', sent ? 1 : 0);
-}
-
-function isTokenSentToServer(){
-    return window.localStorage.getItem('sentTokenToServer') == 1;
-}
 function saveToken(token){
-   myToken = token;
    window.localStorage.setItem('myToken', token);
 }
 

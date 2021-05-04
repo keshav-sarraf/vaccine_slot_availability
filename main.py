@@ -21,8 +21,15 @@ def get_vaccination_slots(dist_name):
 
 
 @app.route('/')
-def hello_world():
+def landing_page():
     return render_template("landing.html")
+
+
+@app.route('/notification-subscription', methods=['POST'])
+def accept_notification_subscription():
+    content = request.json
+    print(content)
+    return "Hello World";
 
 
 '''
@@ -35,8 +42,8 @@ for notification:
         notifiers:[
             p1:
                 is_notified?
-                email:
                 push_id:
+                timestamp_of_subscription
         ]
         
     
@@ -50,6 +57,8 @@ for notification:
 #TODO: create job to send notification if slots available
 #TODO: remove from list after sending notification
 #TODO: if sharing url with location, then populate the list automatically
+#TODO: create a page to show how to enable notifications
+#TODO: validate token before sending notification
 
 if __name__ == '__main__':
     app.run(debug=True)
