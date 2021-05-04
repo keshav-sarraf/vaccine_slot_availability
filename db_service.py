@@ -19,6 +19,7 @@ db = firestore.client()
 def _get_topic_from_dist_id(dist_id):
     return "/topics/{}".format(dist_id)
 
+
 def add_subscriber_to_topic(token, dist_id):
     # TODO: validate
 
@@ -29,7 +30,7 @@ def add_subscriber_to_topic(token, dist_id):
     return str(response.success_count)
 
 
-def refresh_slots_in_db():
+def refresh_slots_data_and_notify():
     dist_info_list = get_all_dist_codes()
     dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
 
@@ -44,12 +45,19 @@ def refresh_slots_in_db():
             key = "date_{}_center_{}".format(slot["date"], slot["center_id"])
             doc_ref = db.collection(u'slots').document(key)
             doc_ref.set(slot, merge=True)
+
+        # send notification
+        if len(slots) >= 1:
+            dist_name = dist_info["dist_name"]
+            date = slots[0]["date"]
+            num_slots = slots[0]["capacity_18_above"]
+            send_notification(dist_id, dist_name, date, num_slots)
+
         time.sleep(random.random() * 5)
     return
 
 
 def send_notification(dist_id, dist_name, date, num_slots):
-
     title = "Vaccine Slots Available"
     body = "{} has {} slots on {}".format(dist_name, num_slots, date)
 
@@ -64,6 +72,7 @@ def send_notification(dist_id, dist_name, date, num_slots):
     response = messaging.send(message)
     return response
 
-# refresh_slots_in_db()
+
+refresh_slots_data_and_notify()
 
 # TODO: check the slots, if they are full then delete from the db
