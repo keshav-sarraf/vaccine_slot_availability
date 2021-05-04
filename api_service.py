@@ -51,12 +51,17 @@ def get_dist_id_from_name_api(dist_name):
     name_code_dict = dict((d["dist_name"], d["dist_id"]) for d in dist_codes)
     return name_code_dict.get(dist_name)
 
+
 def get_dist_vaccination_calendar_by_date(dist_id, date):
     url = r"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict"
     params = {"district_id": str(dist_id),
               "date": date}
 
     response = requests.get(url, params=params)
+
+    if response.status_code != 200:
+        print(response.text)
+
     data = response.json()
 
     slots = []

@@ -78,33 +78,6 @@ def send_notification(dist_id, dist_name, date, num_slots):
     return response
 
 
-def refresh_slots_data_and_notify():
-    dist_info_list = get_all_dist_codes_api()
-    dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
-
-    for dist_info in dist_info_list:
-        dist_id = dist_info["dist_id"]
-        slots = get_dist_vaccination_calendar(dist_id)
-
-        info = "{} | {} | {} ".format(dist_info["state_name"], dist_info["dist_name"], len(slots))
-        print(info)
-
-        for slot in slots:
-            key = _get_slot_document_key(slot)
-            doc_ref = db.collection(u'slots').document(key)
-            doc_ref.set(slot, merge=True)
-
-        # send notification
-        if len(slots) >= 1:
-            dist_name = dist_info["dist_name"]
-            date = slots[0]["date"]
-            num_slots = slots[0]["capacity_18_above"]
-            send_notification(dist_id, dist_name, date, num_slots)
-
-        time.sleep(random.random() * 5)
-    return
-
-
 def create_static_data_in_db():
     dist_info_list = get_all_dist_codes_api()
     for dist_info in dist_info_list:
