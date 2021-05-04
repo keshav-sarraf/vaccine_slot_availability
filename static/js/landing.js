@@ -65,8 +65,11 @@ navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
 });
 
 messaging.onMessage((payload) => {
-  console.log('Message received. ', payload);
+  console.log('Message received. ', payload.notification);
+  $("#toast-title").text(payload.notification.title);
+  $("#toast-body").text(payload.notification.body);
+  $('.toast').toast('show');
 });
 
-
+$(".toast").toast({ autohide: false });
 //https://stackoverflow.com/questions/58146752/firebase-cloud-messaging-web-not-receiving-test-messages
