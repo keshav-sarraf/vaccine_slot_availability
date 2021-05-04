@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request
-from api_service import get_all_dist_codes, get_filtered_dists, get_dist_vaccination_calendar, get_dist_id_from_name
-from db_service import add_subscriber_to_topic
+from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar, get_dist_id_from_name
+from db_service import add_subscriber_to_topic, get_slots_by_dist_id, get_all_dist_codes_db
+from utils import get_filtered_dists
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -8,7 +9,8 @@ app = Flask(__name__, static_url_path='/static')
 @app.route('/districts', methods=['GET'])
 def get_districts():
     query = request.args.get('q')
-    filtered_dists = get_filtered_dists(query)
+    dist_codes = get_all_dist_codes_db()
+    filtered_dists = get_filtered_dists(query, dist_codes)
     filtered_dists_list = list(map(lambda x: "{} | {}".format(x["dist_name"], x["state_name"]), filtered_dists))
     filtered_dists_list = filtered_dists_list[0:10]
     return jsonify(filtered_dists_list)
@@ -18,7 +20,7 @@ def get_districts():
 def get_vaccination_slots(dist_name):
 
     dist_id = get_dist_id_from_name(dist_name)
-    vaccination_calendar = get_dist_vaccination_calendar(str(dist_id))
+    vaccination_calendar = get_slots_by_dist_id(dist_id)
     return jsonify(vaccination_calendar)
 
 

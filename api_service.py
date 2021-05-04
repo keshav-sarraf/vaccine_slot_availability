@@ -25,13 +25,13 @@ def get_all_state_codes():
 
 
 @lru_cache()
-def get_all_dist_codes():
+def get_all_dist_codes_api():
     dist_codes = list()
 
     states = get_all_state_codes()
 
     for state in states:
-        print("State: ", state)
+        # print("State: ", state)
         response = requests.get(
             "https://cdn-api.co-vin.in/api/v2/admin/location/districts/{}".format(state["state_id"]))
         print(response.json())
@@ -47,23 +47,9 @@ def get_all_dist_codes():
 
 @lru_cache()
 def get_dist_id_from_name(dist_name):
-    dist_codes = get_all_dist_codes()
+    dist_codes = get_all_dist_codes_api()
     name_code_dict = dict((d["dist_name"], d["dist_id"]) for d in dist_codes)
     return name_code_dict.get(dist_name)
-
-
-def get_filtered_dists(search_query):
-    dist_codes = get_all_dist_codes()
-    search_query = search_query.lower()
-
-    if search_query:
-        filtered_dists = list(filter(lambda x: search_query in x['dist_name'].lower()
-                                               or search_query in x['state_name'].lower()
-                                     , dist_codes))
-    else:
-        filtered_dists = dist_codes
-    return filtered_dists
-
 
 def get_dist_vaccination_calendar_by_date(dist_id, date):
     url = r"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict"
