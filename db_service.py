@@ -36,7 +36,14 @@ def get_all_dist_codes_db():
     return dist_info_list
 
 
-def get_slots_by_dist_id(dist_id):
+@lru_cache()
+def get_dist_id_from_name_db(dist_name):
+    dist_codes = get_all_dist_codes_db()
+    name_code_dict = dict((d["dist_name"], d["dist_id"]) for d in dist_codes)
+    return name_code_dict.get(dist_name)
+
+
+def get_slots_by_dist_id_db(dist_id):
     slots_ref = db.collection(u'slots')
     docs = slots_ref.where(u'dist_id', u'==', dist_id).stream()
 
@@ -48,8 +55,6 @@ def get_slots_by_dist_id(dist_id):
 
 
 def add_subscriber_to_topic(token, dist_id):
-    # TODO: validate
-
     registration_tokens = [token]
     topic = _get_topic_from_dist_id(dist_id)
 
@@ -109,11 +114,5 @@ def create_static_data_in_db():
         doc_ref = db.collection(u'static').document(key)
         print(doc_ref.set(dist_info, merge=True))
     return
-
-
-#create_static_data_in_db()
-refresh_slots_data_and_notify()
-# create_static_data_in_db()
-#print(get_all_dist_codes_db())
 
 # TODO: check the slots, if they are full then delete from the db

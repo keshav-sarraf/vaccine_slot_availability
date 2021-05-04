@@ -46,7 +46,7 @@ def get_all_dist_codes_api():
 
 
 @lru_cache()
-def get_dist_id_from_name(dist_name):
+def get_dist_id_from_name_api(dist_name):
     dist_codes = get_all_dist_codes_api()
     name_code_dict = dict((d["dist_name"], d["dist_id"]) for d in dist_codes)
     return name_code_dict.get(dist_name)

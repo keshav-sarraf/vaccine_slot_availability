@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, render_template, request
-from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar, get_dist_id_from_name
-from db_service import add_subscriber_to_topic, get_slots_by_dist_id, get_all_dist_codes_db
+from db_service import add_subscriber_to_topic, get_all_dist_codes_db, get_slots_by_dist_id_db, get_dist_id_from_name_db
 from utils import get_filtered_dists
 
 app = Flask(__name__, static_url_path='/static')
@@ -18,9 +17,8 @@ def get_districts():
 
 @app.route('/slots/district/<dist_name>')
 def get_vaccination_slots(dist_name):
-
-    dist_id = get_dist_id_from_name(dist_name)
-    vaccination_calendar = get_slots_by_dist_id(dist_id)
+    dist_id = get_dist_id_from_name_db(dist_name)
+    vaccination_calendar = get_slots_by_dist_id_db(dist_id)
     return jsonify(vaccination_calendar)
 
 
@@ -37,7 +35,7 @@ def accept_notification_subscription():
     notification_token = payload["notification_token"]
     # age_group = payload["age_group"]
 
-    dist_id = get_dist_id_from_name(dist_name)
+    dist_id = get_dist_id_from_name_db(dist_name)
     result = add_subscriber_to_topic(notification_token, dist_id)
 
     return jsonify(result)
@@ -60,16 +58,16 @@ for notification:
     
 '''
 
-#TODO: change api to pick from firestore
-#TODO: create apis to refresh firestore periodically
-#TODO: create api to accept pin code
-#TODO: create api to accept coordinates
-#TODO: create api to accept subscription
-#TODO: create job to send notification if slots available
-#TODO: remove from list after sending notification
-#TODO: if sharing url with location, then populate the list automatically
-#TODO: create a page to show how to enable notifications
-#TODO: validate token before sending notification
+# TODO: change api to pick from firestore
+# TODO: create apis to refresh firestore periodically
+# TODO: create api to accept pin code
+# TODO: create api to accept coordinates
+# TODO: create api to accept subscription
+# TODO: create job to send notification if slots available
+# TODO: remove from list after sending notification
+# TODO: if sharing url with location, then populate the list automatically
+# TODO: create a page to show how to enable notifications
+# TODO: validate token before sending notification
 
 if __name__ == '__main__':
     app.run(debug=True)
