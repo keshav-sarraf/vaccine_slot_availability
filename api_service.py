@@ -4,7 +4,7 @@ from functools import lru_cache
 import logging
 import requests
 
-#logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 resp = requests.get("http://ip-api.com/json")
 print(resp.json())
@@ -16,7 +16,10 @@ print(resp.json())
 def get_all_state_codes():
     headers = {'Content-type': 'application/json', 'accept': 'application/json', 'Accept-Language': 'hi_IN'}
     response = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states", headers=headers)
-    print(response.json())
+
+    if response.status_code != 200:
+        print(response.text)
+
     json_data = response.json()["states"]
     return json_data
 
@@ -64,7 +67,7 @@ def get_filtered_dists(search_query):
 
 def get_dist_vaccination_calendar_by_date(dist_id, date):
     url = r"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict"
-    params = {"district_id": dist_id,
+    params = {"district_id": str(dist_id),
               "date": date}
 
     response = requests.get(url, params=params)
@@ -76,11 +79,13 @@ def get_dist_vaccination_calendar_by_date(dist_id, date):
 
     for center_info in data["centers"]:
         slot_info = {
+            "center_id": center_info["center_id"],
             "center_name": center_info["name"],
             "state_name": center_info["state_name"],
             "dist_name": center_info["district_name"],
             "block_name": center_info["block_name"],
             "pincode": center_info["pincode"],
+            "dist_id": dist_id,
         }
 
         for session in center_info["sessions"]:
@@ -92,11 +97,13 @@ def get_dist_vaccination_calendar_by_date(dist_id, date):
                 "date": new_format,
                 "capacity_18_above": session["available_capacity"] if min_age_limit == 18 else 0,
                 "capacity_45_above": session["available_capacity"] if min_age_limit == 45 else 0,
+                "vaccine": session["vaccine"]
             }
 
             combined_info = {**slot_info, **session_info}
             slots.append(combined_info)
 
+    slots = list(filter(lambda x: x["capacity_18_above"] > 0, slots))
     return slots
 
 
@@ -108,7 +115,7 @@ def get_dist_vaccination_calendar(dist_id):
 
     for i in range(4):
         date_string = datetime.strftime(date, '%d-%m-%Y')
-        print(date_string, "\n")
+        # print(date_string, "\n")
         week_slots = get_dist_vaccination_calendar_by_date(dist_id, date_string)
         slots = slots + week_slots
         date = date + timedelta(days=8)

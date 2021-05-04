@@ -1,3 +1,7 @@
+import datetime
+import random
+import time
+
 from firebase_admin import firestore
 
 # Use the application default credentials
@@ -5,38 +9,61 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import messaging
 
-from api_service import get_all_dist_codes
+from api_service import get_all_dist_codes, get_dist_vaccination_calendar
 
 cred = credentials.Certificate("vaccineslotavailability-firebase-adminsdk-6jiff-78515b332d.json")
 firebase_admin.initialize_app(cred)
-#db = firestore.client()
+db = firestore.client()
 
 
-#dist_codes = get_all_dist_codes()
+def _get_topic_from_dist_id(dist_id):
+    return "/topics/{}".format(dist_id)
 
-# doc_ref = db.collection(u'districts')
-# for dist in dist_codes:
-#     doc_ref.document(str(dist['dist_id'])).set(dist)
+def add_subscriber_to_topic(token, dist_id):
+    # TODO: validate
 
-#doc_ref = db.collection(u'districts')
+    registration_tokens = [token]
+    topic = _get_topic_from_dist_id(dist_id)
+
+    response = messaging.subscribe_to_topic(registration_tokens, topic)
+    return str(response.success_count)
 
 
-# [START send_to_token]
-# This registration token comes from the client FCM SDKs.
-registration_token = 'd7fftIONwFgXSlVLpabKPF:APA91bEpAxx2o8zL_xIR6kSwsOgZ_liQPgqayARRxHObPJesezLklh4uD32bOvozBzp_JQtu-EOfxT-fPe18JShPN-a5MCJQ2_cgnofDsvWl1oytsofVzaqn8-XsExIIL_6BnLsTmgPn'
-# See documentation on defining a message payload.
-message = messaging.Message(
-    data={
-        'score': '850',
-        'time': '2:45',
-    },
-    token=registration_token,
-)
+def refresh_slots_in_db():
+    dist_info_list = get_all_dist_codes()
+    dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
 
-# Send a message to the device corresponding to the provided
-# registration token.
-response = messaging.send(message)
-# Response is a message ID string.
-print('Successfully sent message:', response)
-# [END send_to_token]
+    for dist_info in dist_info_list:
+        dist_id = dist_info["dist_id"]
+        slots = get_dist_vaccination_calendar(dist_id)
 
+        info = "{} | {} | {} ".format(dist_info["state_name"], dist_info["dist_name"], len(slots))
+        print(info)
+
+        for slot in slots:
+            key = "date_{}_center_{}".format(slot["date"], slot["center_id"])
+            doc_ref = db.collection(u'slots').document(key)
+            doc_ref.set(slot, merge=True)
+        time.sleep(random.random() * 5)
+    return
+
+
+def send_notification(dist_id, dist_name, date, num_slots):
+
+    title = "Vaccine Slots Available"
+    body = "{} has {} slots on {}".format(dist_name, num_slots, date)
+
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=title,
+            body=body,
+        ),
+        topic=_get_topic_from_dist_id(dist_id)
+    )
+
+    response = messaging.send(message)
+    return response
+
+# refresh_slots_in_db()
+
+# TODO: check the slots, if they are full then delete from the db

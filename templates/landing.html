@@ -16,7 +16,7 @@
     <div class="container">
         <h1 class="display-4"></h1>
         <p class="lead">
-            App to show available slots for vaccination and notifies when something gets available
+            App to show available slots for vaccination for age group 18-44 and notifies when something gets available
         </p>
     </div>
 </div>
@@ -29,13 +29,13 @@
             You can get a notification when slots would be available.
         </p>
 
-        <div class="form-group">
-            <label for="ageGroupSelector">Select Age Group</label>
-            <select class="form-control" id="ageGroupSelector">
-                <option>18-44</option>
-                <option>45 and Above</option>
-            </select>
-        </div>
+<!--        <div class="form-group">-->
+<!--            <label for="ageGroupSelector">Select Age Group</label>-->
+<!--            <select class="form-control" id="ageGroupSelector">-->
+<!--                <option>18-44</option>-->
+<!--                <option>45 and Above</option>-->
+<!--            </select>-->
+<!--        </div>-->
 
         <button class="btn btn-primary" id="notificationBtn">Notify Me</button>
 
@@ -53,7 +53,8 @@
                 <th data-field="date" data-filter-control="select" data-sortable="true">Date</th>
                 <th data-field="center_name" data-filter-control="select">Center</th>
                 <th data-field="capacity_18_above" data-sortable="true">Available Capacity 18+</th>
-                <th data-field="capacity_45_above" data-sortable="true">Available Capacity 45+</th>
+                <th data-field="vaccine" data-filter-control="select">Vaccine</th>
+<!--                <th data-field="capacity_45_above" data-sortable="true">Available Capacity 45+</th>-->
                 <!--                        <th data-field="state_name" data-filter-control="select">State</th>-->
                 <!--                        <th data-field="dist_name" data-filter-control="select">District</th>-->
                 <th data-field="block_name" data-filter-control="select">Block</th>

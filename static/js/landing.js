@@ -42,12 +42,12 @@ $("#notificationBtn").click(function(){
         return;
     }
 
-    var ageGroup = $('#ageGroupSelector').find(":selected").text();
-    console.log(ageGroup);
+//    var ageGroup = $('#ageGroupSelector').find(":selected").text();
+//    console.log(ageGroup);
 
     requestBody = {
         "notification_token" : notificationToken,
-        'age_group' : ageGroup,
+//        'age_group' : ageGroup,
         'state_name' : selectedState,
         'dist_name' : selectedDistrict,
         'pincode' : selectedPincode,
@@ -110,6 +110,7 @@ navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
 });
 
 messaging.onMessage((payload) => {
+  console.log('Message payload', payload);
   console.log('Message received. ', payload.notification);
   $("#toast-title").text(payload.notification.title);
   $("#toast-body").text(payload.notification.body);
