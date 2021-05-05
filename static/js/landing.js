@@ -101,14 +101,14 @@ var firebaseConfig = {
     projectId: "vaccineslotavailability",
     storageBucket: "vaccineslotavailability.appspot.com",
     messagingSenderId: "837743212833",
-    appId: "1:837743212833:web:12d2f5bdecbf7ad2742660",
-    measurementId: "G-HPZFM219CL"
-};
+    appId: "1:837743212833:web:b8f723e653b52229742660",
+    measurementId: "G-0L3592Q6HT"
+  };
 
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const messaging = firebase.messaging();
-firebaseApiToken = "BAEa3MCLg6weOFE9wYEZQ17NAAeOSMpevbXFy_Vttn2iAqds22Pwu9lS90MYbOxxueNbyj3Yn_FTe2e2xJoENKk";
+firebaseApiToken = "BE9QCQjrA14YVfoK_-BT3FHHoBO-eyHi5vEzZ-lu5tW-0uuFmTVZ1OVSf0SKPti1iqMf789fe0rizFkZKLA6qr8";
 
 navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
 .then(function(registration){
