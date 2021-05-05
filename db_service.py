@@ -9,6 +9,7 @@ from firebase_admin import firestore
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import messaging
+from pytz import timezone
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 
@@ -61,10 +62,14 @@ def get_dist_id_from_name_db(dist_name):
 def get_slots_by_dist_id_db(dist_id):
     slots_ref = db.collection(u'slots')
     docs = slots_ref.where(u'dist_id', u'==', dist_id).stream()
+    datetime_format = "%d-%m-%Y %H:%M:%S"
 
     slots = []
     for doc in docs:
-        slots.append(doc.to_dict())
+        doc_dict = doc.to_dict()
+        doc_dict["update_ts"] = doc_dict["update_ts"].astimezone(timezone('Asia/Kolkata'))
+        doc_dict["update_ts"] = doc_dict["update_ts"].strftime(datetime_format)
+        slots.append(doc_dict)
 
     return slots
 

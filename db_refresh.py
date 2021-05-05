@@ -7,6 +7,9 @@ from tqdm import tqdm
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 from db_service import _get_slot_document_key, send_notification, db
 
+# on every 3rd refresh cycle db would be updated, but notification is sent all the time
+NUM_DATA_REFRESHED = 1
+
 
 def _clear_db(dist_id_to_refresh):
     docs = db.collection(u'slots').where(u'dist_id', u'==', dist_id_to_refresh).stream()
@@ -22,11 +25,12 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
     print(info)
 
-    for slot in slots:
-        slot["update_ts"] = firestore.SERVER_TIMESTAMP
-        key = _get_slot_document_key(slot)
-        doc_ref = db.collection(u'slots').document(key)
-        doc_ref.set(slot, merge=True)
+    if NUM_DATA_REFRESHED % 3 == 0:
+        for slot in slots:
+            slot["update_ts"] = firestore.SERVER_TIMESTAMP
+            key = _get_slot_document_key(slot)
+            doc_ref = db.collection(u'slots').document(key)
+            doc_ref.set(slot, merge=True)
 
     # send notification
     if len(slots) >= 1:
@@ -46,10 +50,11 @@ def _refresh_and_get_dist_info_list():
     api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
 
     # update in firebase
-    for dist_info_itr in api_dist_info_list:
-        key = str(dist_info_itr["dist_id"])
-        doc_ref = db.collection(u'static').document(key)
-        print(doc_ref.set(dist_info_itr, merge=True))
+    if NUM_DATA_REFRESHED % 3 == 0:
+        for dist_info_itr in api_dist_info_list:
+            key = str(dist_info_itr["dist_id"])
+            doc_ref = db.collection(u'static').document(key)
+            print(doc_ref.set(dist_info_itr, merge=True))
 
     return api_dist_info_list
 
@@ -72,6 +77,7 @@ while True:
             time.sleep(1 + random.random() * 5)
         print("Done with one refresh, will sleep for 4 hours")
         refreshed_districts = dict()
-        time.sleep(4 * 60 * 60)
+        time.sleep(2 * 60 * 60)
+        NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
     except Exception as e:
         time.sleep(300)
