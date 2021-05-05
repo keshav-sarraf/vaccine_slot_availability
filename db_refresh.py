@@ -5,11 +5,11 @@ from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 from db_service import _get_slot_document_key, send_notification, db
 
 
-def _refresh_dist(dist_id_to_refresh):
+def _refresh_dist(dist_id_to_refresh, dist_info_dict):
     slots = get_dist_vaccination_calendar(dist_id_to_refresh)
     slots = slots[0:7]
 
-    info = "{} | {} | {} ".format(dist_info["state_name"], dist_info["dist_name"], len(slots))
+    info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
     print(info)
 
     for slot in slots:
@@ -19,7 +19,7 @@ def _refresh_dist(dist_id_to_refresh):
 
     # send notification
     if len(slots) >= 1:
-        dist_name = dist_info["dist_name"]
+        dist_name = dist_info_dict["dist_name"]
         date = slots[0]["date"]
         num_slots = slots[0]["capacity_18_above"]
         send_notification(dist_id_to_refresh, dist_name, date, num_slots)
@@ -44,13 +44,11 @@ while True:
             if dist_id in refreshed_dicts:
                 continue
 
-            _refresh_dist(dist_id)
+            _refresh_dist(dist_id, dist_info)
             refreshed_dicts[dist_id] = True
             # print(refreshed_dicts)
 
-            time.sleep(2 + random.random() * 5)
+            time.sleep(1 + random.random() * 5)
         refreshed_dicts = dict()
     except Exception as e:
         time.sleep(120)
-
-
