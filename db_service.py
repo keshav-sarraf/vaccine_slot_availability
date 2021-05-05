@@ -110,5 +110,3 @@ def create_static_data_in_db():
         doc_ref = db.collection(u'static').document(key)
         print(doc_ref.set(dist_info, merge=True))
     return
-
-# TODO: check the slots, if they are full then delete from the db

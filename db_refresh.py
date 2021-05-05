@@ -17,7 +17,7 @@ def _clear_db(dist_id_to_refresh):
 
 def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = get_dist_vaccination_calendar(dist_id_to_refresh)
-    slots = slots[0:7]
+    slots = slots[0:5]
 
     info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
     print(info)
@@ -74,4 +74,4 @@ while True:
         refreshed_districts = dict()
         time.sleep(4 * 60 * 60)
     except Exception as e:
-        time.sleep(120)
+        time.sleep(300)
