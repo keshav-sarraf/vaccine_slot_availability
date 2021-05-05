@@ -36,7 +36,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
             slot["update_ts"] = firestore.SERVER_TIMESTAMP
 
         document = {"vaccine_slots": slots}
-        key = _get_slot_document_key(slot["dist_id"])
+        key = _get_slot_document_key(dist_id_to_refresh)
         doc_ref = db.collection(u'slots').document(key)
         doc_ref.set(document)
 
