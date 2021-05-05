@@ -1,5 +1,7 @@
 import time
 import random
+
+from firebase_admin import firestore
 from tqdm import tqdm
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
@@ -21,6 +23,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     print(info)
 
     for slot in slots:
+        slot["update_ts"] = firestore.SERVER_TIMESTAMP
         key = _get_slot_document_key(slot)
         doc_ref = db.collection(u'slots').document(key)
         doc_ref.set(slot, merge=True)
