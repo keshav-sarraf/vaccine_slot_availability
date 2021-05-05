@@ -15,7 +15,7 @@ def get_districts():
     dist_codes = get_all_dist_codes_db()
     filtered_dists = get_filtered_dists(query, dist_codes)
     filtered_dists_list = list(map(lambda x: "{} | {}".format(x["dist_name"], x["state_name"]), filtered_dists))
-    filtered_dists_list = filtered_dists_list[0:10]
+    filtered_dists_list = filtered_dists_list[0:12]
     return jsonify(filtered_dists_list)
 
 
