@@ -48,9 +48,9 @@ while True:
             refreshed_dicts[dist_id] = True
             # print(refreshed_dicts)
 
-            time.sleep(5 + random.random() * 5)
+            time.sleep(2 + random.random() * 5)
         refreshed_dicts = dict()
     except Exception as e:
-        time.sleep(300)
+        time.sleep(120)
 
 
