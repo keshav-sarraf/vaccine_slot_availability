@@ -90,6 +90,31 @@ $("#unsubscribeBtn").click(function(){
     //send ajax request
 });
 
+
+$("#testBtn").click(function(){
+    console.log("Test Called");
+    //get the token
+    notificationToken = getToken();
+
+    requestBody = {
+        "notification_token" : notificationToken,
+        'state_name' : selectedState,
+        'dist_name' : selectedDistrict,
+        'pincode' : selectedPincode,
+    };
+
+    $.ajax( "/notification-test", {
+    data : JSON.stringify(requestBody),
+    contentType : 'application/json',
+    type : 'POST',
+    success : function( response ) {
+        console.log(response);
+    }
+    });
+
+    alert("Now close the tab, you'll get a notification in few seconds :)");
+});
+
 $(".toast").toast({ autohide: false });
 $("#slots-table").hide();
 $("#subscription-div").hide();

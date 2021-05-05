@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, render_template, request
+
+from api_service import get_all_dist_codes_api
 from db_service import add_subscriber_to_topic, get_all_dist_codes_db, get_slots_by_dist_id_db, \
-    get_dist_id_from_name_db, delete_subscriber_from_topic
+    get_dist_id_from_name_db, delete_subscriber_from_topic, send_test_notification
 from utils import get_filtered_dists
 
 app = Flask(__name__, static_url_path='/static')
@@ -55,6 +57,17 @@ def accept_notification_un_subscription():
 
     dist_id = get_dist_id_from_name_db(dist_name)
     result = delete_subscriber_from_topic(notification_token, dist_id)
+
+    return jsonify(result)
+
+
+@app.route('/notification-test', methods=['POST'])
+def test_notification():
+    payload = request.json
+
+    dist_name = payload["dist_name"]
+    notification_token = payload["notification_token"]
+    result = send_test_notification(notification_token, dist_name)
 
     return jsonify(result)
 

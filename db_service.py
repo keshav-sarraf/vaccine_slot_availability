@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import time
 from functools import lru_cache
 
 from firebase_admin import firestore
@@ -59,6 +60,7 @@ def get_dist_id_from_name_db(dist_name):
     return name_code_dict.get(dist_name)
 
 
+@lru_cache(maxsize=100)
 def get_slots_by_dist_id_db(dist_id):
     slots_ref = db.collection(u'slots')
     docs = slots_ref.where(u'dist_id', u'==', dist_id).stream()
@@ -90,7 +92,24 @@ def delete_subscriber_from_topic(token, dist_id):
     return str(response.success_count)
 
 
-def send_notification(dist_id, dist_name, date, num_slots):
+def send_test_notification(token, dist_name):
+    time.sleep(6)
+    title = "Test Notification"
+    body = "We will notify you when slots would be available in {}".format(dist_name)
+
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=title,
+            body=body,
+        ),
+        token=token
+    )
+
+    response = messaging.send(message)
+    return response
+
+
+def notify_all_subscribers(dist_id, dist_name, date, num_slots):
     title = "Vaccine Slots Available"
     body = "{} has {} slots on {}".format(dist_name, num_slots, date)
 

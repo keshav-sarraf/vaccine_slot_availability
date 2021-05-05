@@ -5,7 +5,7 @@ from firebase_admin import firestore
 from tqdm import tqdm
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
-from db_service import _get_slot_document_key, send_notification, db
+from db_service import _get_slot_document_key, notify_all_subscribers, db
 
 # on every 3rd refresh cycle db would be updated, but notification is sent all the time
 NUM_DATA_REFRESHED = 1
@@ -43,7 +43,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
         dist_name = dist_info_dict["dist_name"]
         date = slots[0]["date"]
         num_slots = slots[0]["capacity_18_above"]
-        send_notification(dist_id_to_refresh, dist_name, date, num_slots)
+        notify_all_subscribers(dist_id_to_refresh, dist_name, date, num_slots)
 
 
 def _refresh_slots(dist_id_to_refresh, dist_info_dict):
@@ -80,10 +80,11 @@ while True:
             refreshed_districts[dist_id] = True
             # print(refreshed_dicts)
 
-            time.sleep(1 + random.random() * 5)
+            time.sleep(5 + random.random() * 5)
         print("Done with one refresh, will sleep for {} hours".format(WAIT_TIME_HRS))
         refreshed_districts = dict()
         time.sleep(WAIT_TIME_HRS * 60 * 60)
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
     except Exception as e:
+        print("something failed, waiting for {} Hrs".format(WAIT_TIME_HRS))
         time.sleep(300)
