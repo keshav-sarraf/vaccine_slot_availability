@@ -17,6 +17,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/db_refresh.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/db_service.py">
           <value>
             <Attribute>

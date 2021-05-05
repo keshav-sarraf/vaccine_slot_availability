@@ -5,7 +5,14 @@ from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 from db_service import _get_slot_document_key, send_notification, db
 
 
-def _refresh_dist(dist_id_to_refresh, dist_info_dict):
+def _clear_db(dist_id_to_refresh):
+    docs = db.collection(u'slots').where(u'dist_id', u'==', dist_id_to_refresh).stream()
+    for doc in docs:
+        db.collection(u'slots').document(doc.id).delete()
+    return
+
+
+def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = get_dist_vaccination_calendar(dist_id_to_refresh)
     slots = slots[0:7]
 
@@ -25,6 +32,11 @@ def _refresh_dist(dist_id_to_refresh, dist_info_dict):
         send_notification(dist_id_to_refresh, dist_name, date, num_slots)
 
 
+def _refresh_slots(dist_id_to_refresh, dist_info_dict):
+    _clear_db(dist_id_to_refresh)
+    _add_slots(dist_id_to_refresh, dist_info_dict)
+
+
 dist_info_list = get_all_dist_codes_api()
 dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
 
@@ -35,20 +47,20 @@ dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
 #     doc_ref = db.collection(u'static').document(key)
 #     print(doc_ref.set(dist_info, merge=True))
 
-refreshed_dicts = dict()
+refreshed_districts = dict()
 while True:
     try:
         for dist_info in dist_info_list:
             dist_id = dist_info["dist_id"]
 
-            if dist_id in refreshed_dicts:
+            if dist_id in refreshed_districts:
                 continue
 
-            _refresh_dist(dist_id, dist_info)
-            refreshed_dicts[dist_id] = True
+            _refresh_slots(dist_id, dist_info)
+            refreshed_districts[dist_id] = True
             # print(refreshed_dicts)
 
             time.sleep(1 + random.random() * 5)
-        refreshed_dicts = dict()
+        refreshed_districts = dict()
     except Exception as e:
         time.sleep(120)
