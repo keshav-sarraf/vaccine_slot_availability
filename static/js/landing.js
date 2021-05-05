@@ -59,6 +59,7 @@ $("#subscribeBtn").click(function(){
     type : 'POST',
     success : function( response ) {
         console.log(response);
+        alert("You'll get a notification when a slot comes up");
     }
     });
 
@@ -82,6 +83,7 @@ $("#unsubscribeBtn").click(function(){
     type : 'DELETE',
     success : function( response ) {
         console.log(response);
+        alert("Hope you got vaccinated :)");
     }
     });
 
