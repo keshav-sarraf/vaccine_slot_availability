@@ -67,6 +67,8 @@ while True:
             # print(refreshed_dicts)
 
             time.sleep(1 + random.random() * 5)
+        print("Done with one refresh, will sleep for 4 hours")
         refreshed_districts = dict()
+        time.sleep(4 * 60 * 60)
     except Exception as e:
         time.sleep(120)
