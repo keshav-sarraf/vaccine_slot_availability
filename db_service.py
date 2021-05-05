@@ -1,6 +1,6 @@
-import datetime
-import random
-import time
+import base64
+import json
+import os
 from functools import lru_cache
 
 from firebase_admin import firestore
@@ -12,8 +12,23 @@ from firebase_admin import messaging
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 
-cred = credentials.Certificate("vaccineslotavailability-firebase-adminsdk-6jiff-78515b332d.json")
-firebase_admin.initialize_app(cred)
+
+def _get_firebase_credentials():
+    if 'FIREBASE_CONFIG_BASE64' in os.environ:
+        # created encoded config and saved in var in heroku
+        # openssl base64 -in <firebaseConfig.json> -out <firebaseConfigBase64.txt> -A
+        config_json_base64 = os.environ['FIREBASE_CONFIG_BASE64']
+        base64_bytes = config_json_base64.encode('ascii')
+        message_bytes = base64.b64decode(base64_bytes)
+        message = message_bytes.decode('ascii')
+        cred = credentials.Certificate(json.loads(message))
+    else:
+        cred = credentials.Certificate("vaccineslotavailability-firebase-adminsdk-6jiff-78515b332d.json")
+
+    return cred
+
+
+firebase_admin.initialize_app(_get_firebase_credentials())
 db = firestore.client()
 
 

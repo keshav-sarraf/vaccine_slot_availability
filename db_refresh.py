@@ -1,5 +1,6 @@
 import time
 import random
+from tqdm import tqdm
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 from db_service import _get_slot_document_key, send_notification, db
@@ -50,7 +51,7 @@ dist_info_list = sorted(dist_info_list, key=lambda x: x["state_name"])
 refreshed_districts = dict()
 while True:
     try:
-        for dist_info in dist_info_list:
+        for dist_info in tqdm(dist_info_list):
             dist_id = dist_info["dist_id"]
 
             if dist_id in refreshed_districts:

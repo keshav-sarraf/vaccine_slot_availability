@@ -1,2 +1,3 @@
 # Project exclude paths
 /venv/
+/firebaseConfigBase64.txt
