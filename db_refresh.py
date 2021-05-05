@@ -9,6 +9,12 @@ from db_service import _get_slot_document_key, send_notification, db
 
 # on every 3rd refresh cycle db would be updated, but notification is sent all the time
 NUM_DATA_REFRESHED = 1
+WAIT_TIME_HRS = 1
+NUM_ATTEMPTS_TO_DB_UPDATE = 15
+
+
+def _should_write_to_db():
+    return NUM_DATA_REFRESHED % NUM_ATTEMPTS_TO_DB_UPDATE == 0
 
 
 def _clear_db(dist_id_to_refresh):
@@ -25,7 +31,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
     print(info)
 
-    if NUM_DATA_REFRESHED % 3 == 0:
+    if _should_write_to_db:
         for slot in slots:
             slot["update_ts"] = firestore.SERVER_TIMESTAMP
             key = _get_slot_document_key(slot)
@@ -50,7 +56,7 @@ def _refresh_and_get_dist_info_list():
     api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
 
     # update in firebase
-    if NUM_DATA_REFRESHED % 3 == 0:
+    if _should_write_to_db:
         for dist_info_itr in api_dist_info_list:
             key = str(dist_info_itr["dist_id"])
             doc_ref = db.collection(u'static').document(key)
@@ -75,9 +81,9 @@ while True:
             # print(refreshed_dicts)
 
             time.sleep(1 + random.random() * 5)
-        print("Done with one refresh, will sleep for 4 hours")
+        print("Done with one refresh, will sleep for {} hours".format(WAIT_TIME_HRS))
         refreshed_districts = dict()
-        time.sleep(2 * 60 * 60)
+        time.sleep(WAIT_TIME_HRS * 60 * 60)
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
     except Exception as e:
         time.sleep(300)
