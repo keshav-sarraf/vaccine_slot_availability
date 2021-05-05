@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, request
-from db_service import add_subscriber_to_topic, get_all_dist_codes_db, get_slots_by_dist_id_db, get_dist_id_from_name_db
+from db_service import add_subscriber_to_topic, get_all_dist_codes_db, get_slots_by_dist_id_db, \
+    get_dist_id_from_name_db, delete_subscriber_from_topic
 from utils import get_filtered_dists
 
 app = Flask(__name__, static_url_path='/static')
@@ -40,6 +41,20 @@ def accept_notification_subscription():
 
     dist_id = get_dist_id_from_name_db(dist_name)
     result = add_subscriber_to_topic(notification_token, dist_id)
+
+    return jsonify(result)
+
+
+@app.route('/notification-subscription', methods=['DELETE'])
+def accept_notification_un_subscription():
+    payload = request.json
+
+    dist_name = payload["dist_name"]
+    notification_token = payload["notification_token"]
+    # age_group = payload["age_group"]
+
+    dist_id = get_dist_id_from_name_db(dist_name)
+    result = delete_subscriber_from_topic(notification_token, dist_id)
 
     return jsonify(result)
 

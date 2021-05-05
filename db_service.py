@@ -59,6 +59,14 @@ def add_subscriber_to_topic(token, dist_id):
     topic = _get_topic_from_dist_id(dist_id)
 
     response = messaging.subscribe_to_topic(registration_tokens, topic)
+    return response.success_count
+
+
+def delete_subscriber_from_topic(token, dist_id):
+    registration_tokens = [token]
+    topic = _get_topic_from_dist_id(dist_id)
+
+    response = messaging.unsubscribe_from_topic(registration_tokens, topic)
     return str(response.success_count)
 
 

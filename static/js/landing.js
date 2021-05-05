@@ -33,7 +33,7 @@ $('.basicAutoComplete').on('autocomplete.select', function (evt, item) {
     $("#subscription-div").show();
 });
 
-$("#notificationBtn").click(function(){
+$("#subscribeBtn").click(function(){
     //get the token
     notificationToken = getToken();
 
@@ -57,6 +57,29 @@ $("#notificationBtn").click(function(){
     data : JSON.stringify(requestBody),
     contentType : 'application/json',
     type : 'POST',
+    success : function( response ) {
+        console.log(response);
+    }
+    });
+
+    //send ajax request
+});
+
+$("#unsubscribeBtn").click(function(){
+    //get the token
+    notificationToken = getToken();
+
+    requestBody = {
+        "notification_token" : notificationToken,
+        'state_name' : selectedState,
+        'dist_name' : selectedDistrict,
+        'pincode' : selectedPincode,
+    };
+
+    $.ajax( "/notification-subscription", {
+    data : JSON.stringify(requestBody),
+    contentType : 'application/json',
+    type : 'DELETE',
     success : function( response ) {
         console.log(response);
     }

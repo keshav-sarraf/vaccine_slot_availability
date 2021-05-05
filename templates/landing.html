@@ -16,7 +16,9 @@
     <div class="container">
         <h1 class="display-4"></h1>
         <p class="lead">
-            App to show available slots for vaccination for age group 18-44 and notifies when something gets available
+            In the current situation getting vaccinated is need of the hour. You can subscribe yourself to receive a notification
+            when a slot would be available in your area. This feature works on limited browsers at the moment, chrome and firefox are
+            definitely among them ( but you would have to ensure that your system is allowing chrome to send notifications )
         </p>
     </div>
 </div>
@@ -26,7 +28,7 @@
     <div id="subscription-div" class="border mt-5 mb-5 p-2">
 
         <p class="lead">
-            You can get a notification when slots would be available.
+            You can get a push notification when slots would be available.
         </p>
 
 <!--        <div class="form-group">-->
@@ -37,7 +39,16 @@
 <!--            </select>-->
 <!--        </div>-->
 
-        <button class="btn btn-primary" id="notificationBtn">Notify Me</button>
+        <button class="btn btn-primary" id="subscribeBtn">Notify Me</button>
+
+        <br>
+        <br>
+
+        <p class="lead">
+            Already got a slot, unsubscribe yourself from receiving further notifications here
+        </p>
+
+        <button class="btn btn-danger" id="unsubscribeBtn">Unsubscribe</button>
 
     </div>
 
