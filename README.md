@@ -1,4 +1,7 @@
 # vaccine_slot_availability
+
+https://vaccine-slot-availability.herokuapp.com/#!
+
 Simple app to send web notification when vaccine slots get available
 
 Uses the following tools:
