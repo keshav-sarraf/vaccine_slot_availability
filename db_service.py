@@ -3,6 +3,7 @@ import json
 import os
 import time
 from functools import lru_cache
+import cachetools.func
 
 import requests
 from firebase_admin import firestore
@@ -39,49 +40,54 @@ def _get_topic_from_dist_id(dist_id):
     return "/topics/{}".format(dist_id)
 
 
-def _get_slot_document_key(slot):
-    return "date_{}_center_{}".format(slot["date"], slot["center_id"])
+def _get_slot_document_key(dist_id):
+    return "dist_{}".format(dist_id)
 
 
 @lru_cache()
 def get_all_dist_codes_db():
-    dist_info_db = db.collection(u'static').get()
-
-    dist_info_list = list()
-    for dist_info in dist_info_db:
-        dist_info_list.append(dist_info.to_dict())
-
-    return dist_info_list
+    doc_ref = db.collection(u'static').document(u'dist_info')
+    document = doc_ref.get().to_dict()
+    return document["dist_info_list"]
 
 
-@lru_cache()
+@lru_cache(maxsize=100)
 def get_dist_id_from_name_db(dist_name):
     dist_codes = get_all_dist_codes_db()
     name_code_dict = dict((d["dist_name"], d["dist_id"]) for d in dist_codes)
     return name_code_dict.get(dist_name)
 
 
-@lru_cache(maxsize=100)
+@lru_cache(maxsize=300)
 def get_slots_by_dist_id_db(dist_id):
-    slots_ref = db.collection(u'slots')
-    docs = slots_ref.where(u'dist_id', u'==', dist_id).stream()
-    datetime_format = "%d-%m-%Y %H:%M:%S"
+    key = _get_slot_document_key(dist_id)
+    slots_doc = db.collection(u'slots').document(key).get()
 
-    slots = []
-    for doc in docs:
-        doc_dict = doc.to_dict()
-        doc_dict["update_ts"] = doc_dict["update_ts"].astimezone(timezone('Asia/Kolkata'))
-        doc_dict["update_ts"] = doc_dict["update_ts"].strftime(datetime_format)
-        slots.append(doc_dict)
+    if slots_doc.exists:
+        db_slots = slots_doc.to_dict()["vaccine_slots"]
 
-    return slots
+        datetime_format = "%d-%m-%Y %H:%M:%S"
+        res_slots = []
+
+        for slot in db_slots:
+            slot["update_ts"] = slot["update_ts"].astimezone(timezone('Asia/Kolkata'))
+            slot["update_ts"] = slot["update_ts"].strftime(datetime_format)
+            res_slots.append(slot)
+
+        return res_slots
+
+    return []
 
 
 def add_subscriber_to_topic(token, dist_id):
     registration_tokens = [token]
     topic = _get_topic_from_dist_id(dist_id)
-
     response = messaging.subscribe_to_topic(registration_tokens, topic)
+
+    if dist_id not in _get_all_subscribed_dists_from_db():
+        doc_ref = db.collection(u'static').document(u'topics_subscribed')
+        doc_ref.set({str(dist_id): True}, merge=True)
+
     return response.success_count
 
 
@@ -126,9 +132,7 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
     return response
 
 
-def get_all_subscribed_dist_ids():
-    token = "fBmfeH-v8_WxMZ41tDHDb8:APA91bGKvt9zqIUkwW45gr5-FUZgYGY5ZQzbdiamU02-lZ0RdeiGQxjhj_F5TE7qy3k7Fj7iuoFxD2" \
-            "-otc72B5ExLKSv6fWilljvokizTp9kEEk0ufuT9UuqVU-jDflZEvdVDuzjxJIQ"
+def get_all_subscribed_dist_ids(token):
     with open("fcm_auth_key.txt") as f:
         auth_token = f.read()
     auth_key = "key={}".format(auth_token)
@@ -138,12 +142,8 @@ def get_all_subscribed_dist_ids():
     return list(response.json()["rel"]["topics"].keys())
 
 
-def create_static_data_in_db():
-    dist_info_list = get_all_dist_codes_api()
-    for dist_info in dist_info_list:
-        dist_id = dist_info["dist_id"]
-
-        key = str(dist_id)
-        doc_ref = db.collection(u'static').document(key)
-        print(doc_ref.set(dist_info, merge=True))
-    return
+@cachetools.func.ttl_cache(maxsize=2, ttl=10 * 60)
+def _get_all_subscribed_dists_from_db():
+    doc = db.collection(u'static').document(u'topics_subscribed').get()
+    if doc.exists:
+        return list(map(lambda x: int(x), doc.to_dict().keys()))
