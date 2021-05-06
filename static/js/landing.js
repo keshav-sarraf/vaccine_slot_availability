@@ -38,7 +38,7 @@ $("#subscribeBtn").click(function(){
     notificationToken = getToken();
 
     if(notificationToken == null){
-        alert("Unable to subscribe, please check the details section for probable reasons");
+        alert("Unable to subscribe, are you using chrome browser ?");
         return;
     }
 
