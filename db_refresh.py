@@ -11,7 +11,7 @@ from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_
 
 # on every 3rd refresh cycle db would be updated, but notification is sent all the time
 NUM_DATA_REFRESHED = 1
-WAIT_TIME_HRS = 1
+WAIT_TIME_HRS = 0.5
 NUM_ATTEMPTS_TO_DB_UPDATE = 5
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
@@ -33,9 +33,6 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = get_dist_vaccination_calendar(dist_id_to_refresh)
     slots = slots[0:5]
 
-    info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
-    print(info)
-
     if _should_write_to_db() and len(slots) > 0:
         for slot in slots:
             slot["update_ts"] = firestore.SERVER_TIMESTAMP
@@ -47,6 +44,9 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
 
     # send notification
     if len(slots) >= 1:
+        info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
+        print(info)
+
         dist_name = dist_info_dict["dist_name"]
         date = slots[0]["date"]
         num_slots = slots[0]["capacity_18_above"]
@@ -80,7 +80,9 @@ while True:
     subscribed_dists_list = _get_all_subscribed_dists_from_db()
 
     try:
-        for dist_info in tqdm(dist_info_list):
+        pbar = tqdm(dist_info_list)
+        for dist_info in pbar:
+            pbar.set_description("Refreshing {} | {} ".format(dist_info["state_name"], dist_info["dist_name"]))
             dist_id = dist_info["dist_id"]
 
             if dist_id in refreshed_districts:
@@ -97,7 +99,7 @@ while True:
             time.sleep(10 + random.random() * 5)
 
         print("{} : Done with refresh, will sleep for {} hr".format(datetime.datetime.now(),
-                                                                       WAIT_TIME_HRS))
+                                                                    WAIT_TIME_HRS))
         refreshed_districts = dict()
         time.sleep(WAIT_TIME_HRS * 60 * 60)
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1

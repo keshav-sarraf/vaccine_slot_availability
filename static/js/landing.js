@@ -141,12 +141,10 @@ function sendTestNotificationRequest(){
 
 function initFCM(){
 
-//    savedToken = getToken();
-//
-//    if (savedToken != null){
-//        console.log("returning empty promise");
-//        return new Promise((resolve) => { resolve(); });
-//    }
+    if(!firebase.messaging.isSupported()) {
+        alert("Browser doesn't supports web notifications, use Chrome / Firefox instead");
+        throw new PermissionDenied();
+    }
 
     var initPromise = navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
                       .then(function(registration){
@@ -198,6 +196,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const messaging = firebase.messaging();
+
 firebaseApiToken = "BE9QCQjrA14YVfoK_-BT3FHHoBO-eyHi5vEzZ-lu5tW-0uuFmTVZ1OVSf0SKPti1iqMf789fe0rizFkZKLA6qr8";
 
 messaging.onMessage((payload) => {
