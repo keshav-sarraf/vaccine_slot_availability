@@ -77,8 +77,11 @@ def get_slots_by_dist_id_db(dist_id):
 def add_subscriber_to_topic(token, dist_id):
     registration_tokens = [token]
     topic = _get_topic_from_dist_id(dist_id)
-
     response = messaging.subscribe_to_topic(registration_tokens, topic)
+
+    doc_ref = db.collection(u'static').document(u'topics_subscribed')
+    doc_ref.set({str(dist_id), True}, merge=True)
+
     return response.success_count
 
 
@@ -121,3 +124,9 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
 
     response = messaging.send(message)
     return response
+
+
+def _get_all_subscribed_dists_from_db():
+    doc = db.collection(u'static').document(u'topics_subscribed')
+    if doc.exists:
+        return list(map(lambda x: int(x), doc.get().to_dict().keys()))
