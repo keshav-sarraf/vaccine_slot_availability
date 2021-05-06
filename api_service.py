@@ -1,27 +1,53 @@
 import json
+import random
+import time
 from datetime import datetime, timedelta
 from functools import lru_cache
 import logging
 import requests
 
+from random_user_agent.user_agent import UserAgent
+from random_user_agent.params import SoftwareName, OperatingSystem
+
 # logging.basicConfig(level=logging.DEBUG)
+# https://stackoverflow.com/questions/27652543/how-to-use-python-requests-to-fake-a-browser-visit-a-k-a-and-generate-user-agent
 
 resp = requests.get("http://ip-api.com/json")
 print(resp.json())
+
+software_names = [SoftwareName.CHROME.value,
+                  SoftwareName.FIREFOX.value,
+                  SoftwareName.EDGE.value]
+operating_systems = [OperatingSystem.WINDOWS.value]
+user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
 
 
 # TODO: fix this
 # ROOT_URL = r"https://cdn-api.co-vin.in/api"
 
 def get_all_state_codes():
-    headers = {'Content-type': 'application/json', 'accept': 'application/json', 'Accept-Language': 'hi_IN'}
-    response = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states", headers=headers)
+    headers = {'Content-type': 'application/json',
+               'accept': 'application/json',
+               'Accept-Language': 'hi_IN',
+               'User-Agent': user_agent_rotator.get_random_user_agent(),
+               'referer': r'https://www.cowin.gov.in/',
+               'origin': r'https://www.cowin.gov.in'}
 
-    if response.status_code != 200:
-        print(response.text)
+    for i in range(10):
+        try:
+            response = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states", headers=headers)
 
-    json_data = response.json()["states"]
-    return json_data
+            if response.status_code != 200:
+                print(response.text)
+
+            json_data = response.json()["states"]
+            return json_data
+        except Exception as e:
+            print(e)
+            print("unable to get states attempt {}".formet(i))
+            time.sleep(10 + random.random() * 10)
+
+    raise Exception("Unable to get list of states")
 
 
 @lru_cache()
@@ -31,17 +57,32 @@ def get_all_dist_codes_api():
     states = get_all_state_codes()
 
     for state in states:
-        # print("State: ", state)
-        response = requests.get(
-            "https://cdn-api.co-vin.in/api/v2/admin/location/districts/{}".format(state["state_id"]))
-        print(response.json())
-        json_data = json.loads(response.text)
+        headers = {'Content-type': 'application/json',
+                   'accept': 'application/json',
+                   'Accept-Language': 'hi_IN',
+                   'User-Agent': user_agent_rotator.get_random_user_agent(),
+                   'referer': r'https://www.cowin.gov.in/',
+                   'origin': r'https://www.cowin.gov.in'}
+
+        for i in range(10):
+            try:
+                response = requests.get(
+                    "https://cdn-api.co-vin.in/api/v2/admin/location/districts/{}".format(state["state_id"]),
+                    headers=headers)
+                print(response.text)
+                json_data = json.loads(response.text)
+                break
+            except Exception as e:
+                print(e)
+                time.sleep(10 + random.random()*10)
+
         for dist_info in json_data["districts"]:
             dist_codes.append({"dist_id": dist_info["district_id"],
                                "dist_name": dist_info["district_name"],
                                "state_id": state["state_id"],
                                "state_name": state["state_name"]}
                               )
+        time.sleep(2)
     return dist_codes
 
 
@@ -52,12 +93,18 @@ def get_dist_id_from_name_api(dist_name):
     return name_code_dict.get(dist_name)
 
 
-def get_dist_vaccination_calendar_by_date(dist_id, date):
+def get_dist_vaccination_calendar_by_date(dist_id, date, user_agent = user_agent_rotator.get_random_user_agent()):
+    headers = {'Content-type': 'application/json',
+               'accept': 'application/json',
+               'Accept-Language': 'hi_IN',
+               'User-Agent': user_agent,
+               'referer': r'https://www.cowin.gov.in/',
+               'origin': r'https://www.cowin.gov.in'}
     url = r"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict"
     params = {"district_id": str(dist_id),
               "date": date}
 
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, headers=headers)
 
     if response.status_code != 200:
         print(response.text)
@@ -107,9 +154,16 @@ def get_dist_vaccination_calendar(dist_id):
     for i in range(4):
         date_string = datetime.strftime(date, '%d-%m-%Y')
         # print(date_string, "\n")
-        week_slots = get_dist_vaccination_calendar_by_date(dist_id, date_string)
+        week_slots = get_dist_vaccination_calendar_by_date(dist_id,
+                                                           date_string,
+                                                           user_agent=user_agent_rotator.get_random_user_agent())
         slots = slots + week_slots
         date = date + timedelta(days=8)
+
+        if len(slots) >= 5:
+            break
+
+        time.sleep(1 + random.random() * 2)
 
     return slots
 

@@ -70,18 +70,18 @@ def _refresh_and_get_dist_info_list():
 
 
 dist_info_list = _refresh_and_get_dist_info_list()
-
 delay = BASE_DELAY
 refreshed_districts = dict()
 while True:
 
-    try:
-        subscribed_dist_ids = get_all_subscribed_dist_ids()
-        subscribed_dist_ids = list(map(lambda x: int(x), subscribed_dist_ids))
-    except Exception as e:
-        print(e)
-        print("Could not fetch subscribed dist ids, assuming all ids are needed")
-        subscribed_dist_ids = list(map(lambda x: x["dist_id"], dist_info_list))
+    # # Find out the districts that need to be refreshed, instead of refreshing everything
+    # try:
+    #     subscribed_dist_ids = get_all_subscribed_dist_ids()
+    #     subscribed_dist_ids = list(map(lambda x: int(x), subscribed_dist_ids))
+    # except Exception as e:
+    #     print(e)
+    #     print("Could not fetch subscribed dist ids, assuming all ids are needed")
+    #     subscribed_dist_ids = list(map(lambda x: x["dist_id"], dist_info_list))
 
     try:
         for dist_info in tqdm(dist_info_list):
@@ -90,8 +90,8 @@ while True:
             if dist_id in refreshed_districts:
                 continue
 
-            if dist_id not in subscribed_dist_ids:
-                continue
+            # if dist_id not in subscribed_dist_ids:
+            #     continue
 
             _refresh_slots(dist_id, dist_info)
             refreshed_districts[dist_id] = True
