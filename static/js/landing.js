@@ -3,30 +3,6 @@ console.log("Landing Page.JS Called");
 var selectedDistrict = null;
 var selectedState = null;
 
-//Firebase related stuff
-var firebaseConfig = {
-    apiKey: "AIzaSyCLaNNU4xvbXDG412usAzm_woTz3HzTcUA",
-    authDomain: "vaccineslotavailability.firebaseapp.com",
-    projectId: "vaccineslotavailability",
-    storageBucket: "vaccineslotavailability.appspot.com",
-    messagingSenderId: "837743212833",
-    appId: "1:837743212833:web:b8f723e653b52229742660",
-    measurementId: "G-0L3592Q6HT"
-};
-
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
-const messaging = firebase.messaging();
-firebaseApiToken = "BE9QCQjrA14YVfoK_-BT3FHHoBO-eyHi5vEzZ-lu5tW-0uuFmTVZ1OVSf0SKPti1iqMf789fe0rizFkZKLA6qr8";
-
-messaging.onMessage((payload) => {
-  console.log('Message payload', payload);
-  console.log('Message received. ', payload.notification);
-  $("#toast-title").text(payload.notification.title);
-  $("#toast-body").text(payload.notification.body);
-  $('.toast').toast('show');
-});
-
 function refreshTable(selectedDistrict){
     $.get("/slots/district/" + selectedDistrict, function(response){
 //        console.log(response)
@@ -79,10 +55,6 @@ $("#testBtn").click(function(){
         sendTestNotificationRequest();
     });
 });
-
-$(".toast").toast({ autohide: false });
-$("#slots-table").hide();
-$("#subscription-div").hide();
 
 function sendSubscriptionRequest(){
     console.log("sending subscription request");
@@ -206,6 +178,35 @@ function initFCM(){
 
     return initPromise;
 }
+
+//Hide the div with subscription options initially
+$(".toast").toast({ autohide: false });
+$("#slots-table").hide();
+$("#subscription-div").hide();
+
+//Firebase related stuff
+var firebaseConfig = {
+    apiKey: "AIzaSyCLaNNU4xvbXDG412usAzm_woTz3HzTcUA",
+    authDomain: "vaccineslotavailability.firebaseapp.com",
+    projectId: "vaccineslotavailability",
+    storageBucket: "vaccineslotavailability.appspot.com",
+    messagingSenderId: "837743212833",
+    appId: "1:837743212833:web:b8f723e653b52229742660",
+    measurementId: "G-0L3592Q6HT"
+};
+
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+const messaging = firebase.messaging();
+firebaseApiToken = "BE9QCQjrA14YVfoK_-BT3FHHoBO-eyHi5vEzZ-lu5tW-0uuFmTVZ1OVSf0SKPti1iqMf789fe0rizFkZKLA6qr8";
+
+messaging.onMessage((payload) => {
+  console.log('Message payload', payload);
+  console.log('Message received. ', payload.notification);
+  $("#toast-title").text(payload.notification.title);
+  $("#toast-body").text(payload.notification.body);
+  $('.toast').toast('show');
+});
 
 //https://stackoverflow.com/questions/58146752/firebase-cloud-messaging-web-not-receiving-test-messages
 
