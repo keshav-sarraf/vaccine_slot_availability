@@ -15,7 +15,7 @@ BASE_DELAY = 30
 
 
 def _should_write_to_db():
-    return NUM_DATA_REFRESHED % NUM_ATTEMPTS_TO_DB_UPDATE == 0
+    return 1 #NUM_DATA_REFRESHED % NUM_ATTEMPTS_TO_DB_UPDATE == 0
 
 
 def _clear_db(dist_id_to_refresh):
@@ -59,7 +59,7 @@ def _refresh_and_get_dist_info_list():
     api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
 
     # update in firebase
-    if _should_write_to_db:
+    if _should_write_to_db():
         doc_ref = db.collection(u'static').document(u'dist_info')
         document = {"dist_info_list": api_dist_info_list}
         print(doc_ref.set(document))

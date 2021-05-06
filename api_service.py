@@ -44,8 +44,8 @@ def get_all_state_codes():
             return json_data
         except Exception as e:
             print(e)
-            print("unable to get states attempt {}".formet(i))
-            time.sleep(10 + random.random() * 10)
+            print("unable to get states attempt {}".format(i))
+            time.sleep(30 + random.random() * 10)
 
     raise Exception("Unable to get list of states")
 

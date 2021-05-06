@@ -127,9 +127,7 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
     return response
 
 
-def get_all_subscribed_dist_ids():
-    token = "fBmfeH-v8_WxMZ41tDHDb8:APA91bGKvt9zqIUkwW45gr5-FUZgYGY5ZQzbdiamU02-lZ0RdeiGQxjhj_F5TE7qy3k7Fj7iuoFxD2" \
-            "-otc72B5ExLKSv6fWilljvokizTp9kEEk0ufuT9UuqVU-jDflZEvdVDuzjxJIQ"
+def get_all_subscribed_dist_ids(token):
     with open("fcm_auth_key.txt") as f:
         auth_token = f.read()
     auth_key = "key={}".format(auth_token)
