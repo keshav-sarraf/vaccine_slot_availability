@@ -58,6 +58,13 @@ def get_dist_id_from_name_db(dist_name):
     return name_code_dict.get(dist_name)
 
 
+@lru_cache(maxsize=100)
+def get_dist_name_from_id_db(dist_id):
+    dist_codes = get_all_dist_codes_db()
+    name_code_dict = dict((d["dist_id"], d["dist_name"]) for d in dist_codes)
+    return name_code_dict.get(dist_id)
+
+
 @lru_cache(maxsize=300)
 def get_slots_by_dist_id_db(dist_id):
     key = _get_slot_document_key(dist_id)
@@ -86,7 +93,9 @@ def add_subscriber_to_topic(token, dist_id):
 
     if dist_id not in _get_all_subscribed_dists_from_db():
         doc_ref = db.collection(u'static').document(u'topics_subscribed')
-        doc_ref.set({str(dist_id): True}, merge=True)
+        dist_name = get_dist_name_from_id_db(dist_id)
+        doc = {str(dist_id): {"name": dist_name, "count": 0}}
+        doc_ref.set(doc, merge=True)
 
     return response.success_count
 
