@@ -3,6 +3,30 @@ console.log("Landing Page.JS Called");
 var selectedDistrict = null;
 var selectedState = null;
 
+//Firebase related stuff
+var firebaseConfig = {
+    apiKey: "AIzaSyCLaNNU4xvbXDG412usAzm_woTz3HzTcUA",
+    authDomain: "vaccineslotavailability.firebaseapp.com",
+    projectId: "vaccineslotavailability",
+    storageBucket: "vaccineslotavailability.appspot.com",
+    messagingSenderId: "837743212833",
+    appId: "1:837743212833:web:b8f723e653b52229742660",
+    measurementId: "G-0L3592Q6HT"
+};
+
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+const messaging = firebase.messaging();
+firebaseApiToken = "BE9QCQjrA14YVfoK_-BT3FHHoBO-eyHi5vEzZ-lu5tW-0uuFmTVZ1OVSf0SKPti1iqMf789fe0rizFkZKLA6qr8";
+
+messaging.onMessage((payload) => {
+  console.log('Message payload', payload);
+  console.log('Message received. ', payload.notification);
+  $("#toast-title").text(payload.notification.title);
+  $("#toast-body").text(payload.notification.body);
+  $('.toast').toast('show');
+});
+
 function refreshTable(selectedDistrict){
     $.get("/slots/district/" + selectedDistrict, function(response){
 //        console.log(response)
@@ -34,6 +58,34 @@ $('.basicAutoComplete').on('autocomplete.select', function (evt, item) {
 });
 
 $("#subscribeBtn").click(function(){
+    initFCM()
+    .then(function(){
+        sendSubscriptionRequest();
+    });
+});
+
+$("#unsubscribeBtn").click(function(){
+    initFCM()
+    .then(function(){
+        sendUnsubscriptionRequest();
+    });
+});
+
+
+$("#testBtn").click(function(){
+    console.log("Test Called");
+    initFCM()
+    .then(function(){
+        sendTestNotificationRequest();
+    });
+});
+
+$(".toast").toast({ autohide: false });
+$("#slots-table").hide();
+$("#subscription-div").hide();
+
+function sendSubscriptionRequest(){
+    console.log("sending subscription request");
     //get the token
     notificationToken = getToken();
 
@@ -42,31 +94,26 @@ $("#subscribeBtn").click(function(){
         return;
     }
 
-//    var ageGroup = $('#ageGroupSelector').find(":selected").text();
-//    console.log(ageGroup);
-
     requestBody = {
         "notification_token" : notificationToken,
-//        'age_group' : ageGroup,
         'state_name' : selectedState,
         'dist_name' : selectedDistrict,
         'pincode' : selectedPincode,
     };
 
     $.ajax( "/notification-subscription", {
-    data : JSON.stringify(requestBody),
-    contentType : 'application/json',
-    type : 'POST',
-    success : function( response ) {
-        console.log(response);
-        alert("You'll get a notification when a slot comes up");
-    }
+        data : JSON.stringify(requestBody),
+        contentType : 'application/json',
+        type : 'POST',
+        success : function( response ) {
+            console.log(response);
+            alert("You'll get a notification when a slot comes up");
+        }
     });
+}
 
-    //send ajax request
-});
-
-$("#unsubscribeBtn").click(function(){
+function sendUnsubscriptionRequest(){
+    console.log("sending un-subscription request");
     //get the token
     notificationToken = getToken();
 
@@ -86,15 +133,15 @@ $("#unsubscribeBtn").click(function(){
         alert("Hope you got vaccinated :)");
     }
     });
+}
 
-    //send ajax request
-});
-
-
-$("#testBtn").click(function(){
-    console.log("Test Called");
+function sendTestNotificationRequest(){
+    console.log("sending test notification request");
     //get the token
     notificationToken = getToken();
+
+    console.log("token");
+    console.log(notificationToken);
 
     if(notificationToken == null) {
         alert('Permission not granted to show notifications');
@@ -118,61 +165,47 @@ $("#testBtn").click(function(){
     });
 
     alert("Now close the tab, you'll get a notification in few seconds :)");
-});
+}
 
-$(".toast").toast({ autohide: false });
-$("#slots-table").hide();
-$("#subscription-div").hide();
+function initFCM(){
 
-//Firebase related stuff
-var firebaseConfig = {
-    apiKey: "AIzaSyCLaNNU4xvbXDG412usAzm_woTz3HzTcUA",
-    authDomain: "vaccineslotavailability.firebaseapp.com",
-    projectId: "vaccineslotavailability",
-    storageBucket: "vaccineslotavailability.appspot.com",
-    messagingSenderId: "837743212833",
-    appId: "1:837743212833:web:b8f723e653b52229742660",
-    measurementId: "G-0L3592Q6HT"
-  };
+//    savedToken = getToken();
+//
+//    if (savedToken != null){
+//        console.log("returning empty promise");
+//        return new Promise((resolve) => { resolve(); });
+//    }
 
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
-const messaging = firebase.messaging();
-firebaseApiToken = "BE9QCQjrA14YVfoK_-BT3FHHoBO-eyHi5vEzZ-lu5tW-0uuFmTVZ1OVSf0SKPti1iqMf789fe0rizFkZKLA6qr8";
+    var initPromise = navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
+                      .then(function(registration){
+                                console.log("1");
+                                return messaging.getToken({
+                                        vapidKey: firebaseApiToken,
+                                        serviceWorkerRegistration: registration
+                                        });
+                      })
+                      .then((currentToken) => {
+                                console.log("2");
+                                if (currentToken) {
+                                    console.log("Token Available \n");
+                                    console.log(currentToken);
+                                    saveToken(currentToken);
+                                    //store in session, send to backend in case the user subscribes to updates
+                                } else {
+                                    // Show permission request UI
+                                    console.log('No registration token available. Request permission to generate one.');
+                                    //alert('Permission not granted to show notifications');
+                                    throw new PermissionDenied();
+                                }
+                      })
+                       .catch((err) => {
+                                console.log('An error occurred while retrieving token. ', err);
+                                alert('Permission not granted to show notifications');
+                                throw new PermissionDenied();
+                      });
 
-navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
-.then(function(registration){
-    console.log("1");
-    return messaging.getToken({
-        vapidKey: firebaseApiToken,
-        serviceWorkerRegistration: registration
-    });
-})
-.then((currentToken) => {
-    console.log("2");
-
-    if (currentToken) {
-        console.log("Token Available \n");
-        console.log(currentToken);
-        saveToken(currentToken);
-        //store in session, send to backend in case the user subscribes to updates
-    } else {
-        // Show permission request UI
-        console.log('No registration token available. Request permission to generate one.');
-        alert('Permission not granted to show notifications');
-    }
-}).catch((err) => {
-        console.log('An error occurred while retrieving token. ', err);
-        alert('Permission not granted to show notifications');
-});
-
-messaging.onMessage((payload) => {
-  console.log('Message payload', payload);
-  console.log('Message received. ', payload.notification);
-  $("#toast-title").text(payload.notification.title);
-  $("#toast-body").text(payload.notification.body);
-  $('.toast').toast('show');
-});
+    return initPromise;
+}
 
 //https://stackoverflow.com/questions/58146752/firebase-cloud-messaging-web-not-receiving-test-messages
 

@@ -95,7 +95,9 @@ while True:
             # print(refreshed_dicts)
 
             time.sleep(10 + random.random() * 5)
-        print("Done with one refresh, will sleep for {} hours".format(WAIT_TIME_HRS))
+
+        print("{} : Done with refresh, will sleep for {} hr".format(datetime.datetime.now(),
+                                                                       WAIT_TIME_HRS))
         refreshed_districts = dict()
         time.sleep(WAIT_TIME_HRS * 60 * 60)
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
