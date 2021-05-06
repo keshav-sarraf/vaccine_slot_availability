@@ -4,6 +4,7 @@ import os
 import time
 from functools import lru_cache
 
+import requests
 from firebase_admin import firestore
 
 # Use the application default credentials
@@ -124,6 +125,18 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
 
     response = messaging.send(message)
     return response
+
+
+def get_all_subscribed_dist_ids():
+    token = "fBmfeH-v8_WxMZ41tDHDb8:APA91bGKvt9zqIUkwW45gr5-FUZgYGY5ZQzbdiamU02-lZ0RdeiGQxjhj_F5TE7qy3k7Fj7iuoFxD2" \
+            "-otc72B5ExLKSv6fWilljvokizTp9kEEk0ufuT9UuqVU-jDflZEvdVDuzjxJIQ"
+    with open("fcm_auth_key.txt") as f:
+        auth_token = f.read()
+    auth_key = "key={}".format(auth_token)
+    url = "https://iid.googleapis.com/iid/info/{}".format(token)
+    response = requests.get(url, params={"details": True}, headers={"Authorization": auth_key})
+    print(response.json())
+    return list(response.json()["rel"]["topics"].keys())
 
 
 def _get_all_subscribed_dists_from_db():
