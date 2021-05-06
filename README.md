@@ -25,7 +25,7 @@ https://apisetu.gov.in
 - When you learn about this new movie, the next thing that comes to your mind is thought of your buddy Ram.
 - You immediately send him a message with this exciting news and book tickets to the show
 
-### Now in this story, 
+Now in this story, 
 - Ram is analogous to a user of this website. You don't actually know the real name of Ram, it's just a nickname that you gave him
 - The Party is analogus to this website where you meet Ram (user) and learn about his interests in movies (vaccination slots in his area)
 - Caterer of the party is Python-Flask ( Backend ) while the decorations are done using HTML, JQuery and Bootstrap ( Frontend )
