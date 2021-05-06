@@ -35,13 +35,13 @@ pyOpenSSL==20.0.1
 pyparsing==2.4.7
 python-http-client==3.3.2
 pytz==2021.1
+random-user-agent==1.0.1
 requests==2.25.1
 rsa==4.7.2
 sendgrid==6.7.0
 six==1.15.0
 starkbank-ecdsa==1.1.0
+tqdm==4.60.0
 uritemplate==3.0.1
 urllib3==1.26.4
 Werkzeug==1.0.1
-
-tqdm~=4.60.0
