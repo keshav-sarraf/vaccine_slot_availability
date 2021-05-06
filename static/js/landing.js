@@ -143,7 +143,7 @@ function initFCM(){
 
     if(!firebase.messaging.isSupported()) {
         alert("Browser doesn't supports web notifications, use Chrome / Firefox instead");
-        throw new PermissionDenied();
+        throw "Permission Denied";
     }
 
     var initPromise = navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
@@ -165,13 +165,13 @@ function initFCM(){
                                     // Show permission request UI
                                     console.log('No registration token available. Request permission to generate one.');
                                     //alert('Permission not granted to show notifications');
-                                    throw new PermissionDenied();
+                                    throw "Permission Denied";
                                 }
                       })
                        .catch((err) => {
                                 console.log('An error occurred while retrieving token. ', err);
                                 alert('Permission not granted to show notifications');
-                                throw new PermissionDenied();
+                                throw "Permission Denied";
                       });
 
     return initPromise;
