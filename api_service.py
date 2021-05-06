@@ -64,6 +64,7 @@ def get_all_dist_codes_api():
                    'referer': r'https://www.cowin.gov.in/',
                    'origin': r'https://www.cowin.gov.in'}
 
+        success = False
         for i in range(10):
             try:
                 response = requests.get(
@@ -71,19 +72,24 @@ def get_all_dist_codes_api():
                     headers=headers)
                 print(response.text)
                 json_data = json.loads(response.text)
+
+                for dist_info in json_data["districts"]:
+                    dist_codes.append({"dist_id": dist_info["district_id"],
+                                       "dist_name": dist_info["district_name"],
+                                       "state_id": state["state_id"],
+                                       "state_name": state["state_name"]}
+                                      )
+                success = True
                 break
             except Exception as e:
                 print(e)
                 print("unable to get dist info attempt {}".format(i))
-                time.sleep(10 + random.random()*30)
+                time.sleep(30 + random.random()*30)
 
-        for dist_info in json_data["districts"]:
-            dist_codes.append({"dist_id": dist_info["district_id"],
-                               "dist_name": dist_info["district_name"],
-                               "state_id": state["state_id"],
-                               "state_name": state["state_name"]}
-                              )
-        time.sleep(2 + random.random() * 5)
+        if not success:
+            raise Exception("Unable to get dist info for state {}".format(state["state_name"]))
+
+        time.sleep(30 + random.random() * 10)
     return dist_codes
 
 
