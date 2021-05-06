@@ -1,3 +1,4 @@
+import datetime
 import time
 import random
 
@@ -5,7 +6,8 @@ from firebase_admin import firestore
 from tqdm import tqdm
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
-from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_all_subscribed_dists_from_db
+from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_all_subscribed_dists_from_db, \
+    get_all_dist_codes_db
 
 # on every 3rd refresh cycle db would be updated, but notification is sent all the time
 NUM_DATA_REFRESHED = 1
@@ -57,11 +59,12 @@ def _refresh_slots(dist_id_to_refresh, dist_info_dict):
 
 
 def _refresh_and_get_dist_info_list():
-    api_dist_info_list = get_all_dist_codes_api()
-    api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
+    api_dist_info_list = get_all_dist_codes_db()
 
     # update in firebase
     if _should_write_to_db():
+        api_dist_info_list = get_all_dist_codes_api()
+        api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
         doc_ref = db.collection(u'static').document(u'dist_info')
         document = {"dist_info_list": api_dist_info_list}
         print(doc_ref.set(document))

@@ -96,6 +96,11 @@ $("#testBtn").click(function(){
     //get the token
     notificationToken = getToken();
 
+    if(notificationToken == null) {
+        alert('Permission not granted to show notifications');
+        return
+    }
+
     requestBody = {
         "notification_token" : notificationToken,
         'state_name' : selectedState,
@@ -154,9 +159,11 @@ navigator.serviceWorker.register('/static/js/firebase-messaging-sw.js')
     } else {
         // Show permission request UI
         console.log('No registration token available. Request permission to generate one.');
+        alert('Permission not granted to show notifications');
     }
 }).catch((err) => {
         console.log('An error occurred while retrieving token. ', err);
+        alert('Permission not granted to show notifications');
 });
 
 messaging.onMessage((payload) => {
