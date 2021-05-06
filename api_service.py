@@ -45,7 +45,7 @@ def get_all_state_codes():
         except Exception as e:
             print(e)
             print("unable to get states attempt {}".format(i))
-            time.sleep(30 + random.random() * 10)
+            time.sleep(30 + random.random() * 30)
 
     raise Exception("Unable to get list of states")
 
@@ -74,7 +74,8 @@ def get_all_dist_codes_api():
                 break
             except Exception as e:
                 print(e)
-                time.sleep(10 + random.random()*10)
+                print("unable to get dist info attempt {}".format(i))
+                time.sleep(10 + random.random()*30)
 
         for dist_info in json_data["districts"]:
             dist_codes.append({"dist_id": dist_info["district_id"],
@@ -82,7 +83,7 @@ def get_all_dist_codes_api():
                                "state_id": state["state_id"],
                                "state_name": state["state_name"]}
                               )
-        time.sleep(2)
+        time.sleep(2 + random.random() * 5)
     return dist_codes
 
 

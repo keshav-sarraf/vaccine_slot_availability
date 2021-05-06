@@ -5,23 +5,25 @@ from firebase_admin import firestore
 from tqdm import tqdm
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
-from db_service import _get_slot_document_key, notify_all_subscribers, db
+from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_all_subscribed_dists_from_db
+
 # on every 3rd refresh cycle db would be updated, but notification is sent all the time
 NUM_DATA_REFRESHED = 1
 WAIT_TIME_HRS = 1
-NUM_ATTEMPTS_TO_DB_UPDATE = 15
+NUM_ATTEMPTS_TO_DB_UPDATE = 5
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
 
 
 def _should_write_to_db():
-    return 1 #NUM_DATA_REFRESHED % NUM_ATTEMPTS_TO_DB_UPDATE == 0
+    return NUM_DATA_REFRESHED % NUM_ATTEMPTS_TO_DB_UPDATE == 0
 
 
 def _clear_db(dist_id_to_refresh):
-    key = _get_slot_document_key(dist_id_to_refresh)
-    res = db.collection(u'slots').document(key).delete()
-    print(res)
+    if _should_write_to_db():
+        key = _get_slot_document_key(dist_id_to_refresh)
+        res = db.collection(u'slots').document(key).delete()
+        print(res)
     return
 
 
@@ -32,7 +34,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
     print(info)
 
-    if _should_write_to_db():
+    if _should_write_to_db() and len(slots) > 0:
         for slot in slots:
             slot["update_ts"] = firestore.SERVER_TIMESTAMP
 
@@ -71,11 +73,17 @@ dist_info_list = _refresh_and_get_dist_info_list()
 delay = BASE_DELAY
 refreshed_districts = dict()
 while True:
+
+    subscribed_dists_list = _get_all_subscribed_dists_from_db()
+
     try:
         for dist_info in tqdm(dist_info_list):
             dist_id = dist_info["dist_id"]
 
             if dist_id in refreshed_districts:
+                continue
+
+            if dist_id not in subscribed_dists_list:
                 continue
 
             _refresh_slots(dist_id, dist_info)

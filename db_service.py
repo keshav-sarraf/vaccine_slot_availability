@@ -3,6 +3,7 @@ import json
 import os
 import time
 from functools import lru_cache
+import cachetools.func
 
 import requests
 from firebase_admin import firestore
@@ -60,19 +61,22 @@ def get_dist_id_from_name_db(dist_name):
 @lru_cache(maxsize=300)
 def get_slots_by_dist_id_db(dist_id):
     key = _get_slot_document_key(dist_id)
-    slots_ref = db.collection(u'slots').document(key)
-    doc = slots_ref.get()
-    db_slots = doc.to_dict()["vaccine_slots"]
+    slots_doc = db.collection(u'slots').document(key).get()
 
-    datetime_format = "%d-%m-%Y %H:%M:%S"
+    if slots_doc.exists:
+        db_slots = slots_doc.to_dict()["vaccine_slots"]
 
-    res_slots = []
-    for slot in db_slots:
-        slot["update_ts"] = slot["update_ts"].astimezone(timezone('Asia/Kolkata'))
-        slot["update_ts"] = slot["update_ts"].strftime(datetime_format)
-        res_slots.append(slot)
+        datetime_format = "%d-%m-%Y %H:%M:%S"
+        res_slots = []
 
-    return res_slots
+        for slot in db_slots:
+            slot["update_ts"] = slot["update_ts"].astimezone(timezone('Asia/Kolkata'))
+            slot["update_ts"] = slot["update_ts"].strftime(datetime_format)
+            res_slots.append(slot)
+
+        return res_slots
+
+    return []
 
 
 def add_subscriber_to_topic(token, dist_id):
@@ -80,8 +84,9 @@ def add_subscriber_to_topic(token, dist_id):
     topic = _get_topic_from_dist_id(dist_id)
     response = messaging.subscribe_to_topic(registration_tokens, topic)
 
-    doc_ref = db.collection(u'static').document(u'topics_subscribed')
-    doc_ref.set({str(dist_id), True}, merge=True)
+    if dist_id not in _get_all_subscribed_dists_from_db():
+        doc_ref = db.collection(u'static').document(u'topics_subscribed')
+        doc_ref.set({str(dist_id): True}, merge=True)
 
     return response.success_count
 
@@ -137,7 +142,8 @@ def get_all_subscribed_dist_ids(token):
     return list(response.json()["rel"]["topics"].keys())
 
 
+@cachetools.func.ttl_cache(maxsize=2, ttl=10 * 60)
 def _get_all_subscribed_dists_from_db():
-    doc = db.collection(u'static').document(u'topics_subscribed')
+    doc = db.collection(u'static').document(u'topics_subscribed').get()
     if doc.exists:
-        return list(map(lambda x: int(x), doc.get().to_dict().keys()))
+        return list(map(lambda x: int(x), doc.to_dict().keys()))
