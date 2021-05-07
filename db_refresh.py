@@ -13,10 +13,12 @@ from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_
 from utils import sleep_with_activity
 
 NUM_DATA_REFRESHED = 1
-WAIT_TIME_HRS = 0.5
-NUM_ATTEMPTS_TO_DB_UPDATE = 5
+WAIT_TIME_HRS = 10 / 60
+NUM_ATTEMPTS_TO_DB_UPDATE = (24 / WAIT_TIME_HRS) / 8
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
+
+notifications_sent_dict = dict()
 
 
 def _should_write_to_db():
@@ -30,6 +32,23 @@ def _clear_db(dist_id_to_refresh):
         res = db.collection(u'slots').document(key).delete()
         print(res)
     return
+
+
+def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
+
+    dist_name = dist_info_dict["dist_name"]
+    date = slot["date"]
+    num_slots = slot["capacity_18_above"]
+
+    now = datetime.datetime.now()
+    last_sent_on = notifications_sent_dict.get(dist_id_to_refresh,
+                                               default=now - datetime.timedelta(hours=10))
+
+    if (now - last_sent_on).total_seconds() > 2 * 60 * 60:
+        notify_all_subscribers(dist_id_to_refresh, dist_name, date, num_slots)
+        notifications_sent_dict[dist_id_to_refresh] = now
+    else:
+        print("Not notifying since last notification was sent on {}".format(last_sent_on))
 
 
 def _add_slots(dist_id_to_refresh, dist_info_dict):
@@ -48,11 +67,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     if len(slots) >= 1:
         info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
         print(info)
-
-        dist_name = dist_info_dict["dist_name"]
-        date = slots[0]["date"]
-        num_slots = slots[0]["capacity_18_above"]
-        notify_all_subscribers(dist_id_to_refresh, dist_name, date, num_slots)
+        _send_notification(dist_id_to_refresh, dist_info_dict, slots[0])
 
 
 def _refresh_slots(dist_id_to_refresh, dist_info_dict):
@@ -74,7 +89,6 @@ def _refresh_and_get_dist_info_list():
     return api_dist_info_list
 
 
-dist_info_list = _refresh_and_get_dist_info_list()
 delay = BASE_DELAY
 refreshed_districts = dict()
 while True:
@@ -82,7 +96,7 @@ while True:
     subscribed_dists_list = _get_all_subscribed_dists_from_db()
 
     try:
-        pbar = tqdm(dist_info_list)
+        pbar = tqdm(_refresh_and_get_dist_info_list())
         for dist_info in pbar:
             pbar.set_description("Refreshing {} | {} ".format(dist_info["state_name"], dist_info["dist_name"]))
             dist_id = dist_info["dist_id"]

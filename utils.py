@@ -1,5 +1,6 @@
 import datetime
 import time
+from math import floor
 
 
 def get_filtered_dists(search_query, dist_codes):
@@ -15,10 +16,22 @@ def get_filtered_dists(search_query, dist_codes):
 
 
 def sleep_with_activity(message, duration_seconds):
-    next_refresh_time = datetime.datetime.now() + datetime.timedelta(seconds=duration_seconds)
+    start_time = datetime.datetime.now()
+    end_time = start_time + datetime.timedelta(seconds=duration_seconds)
     datetime_format = "%d-%m-%Y %H:%M:%S"
-    next_refresh_time_str = next_refresh_time.strftime(datetime_format)
-    while datetime.datetime.now() < next_refresh_time:
-        curr_time_str = datetime.datetime.now().strftime(datetime_format)
-        print("\r{} | {}: {}".format(curr_time_str,next_refresh_time_str, message), end="")
+    end_time_str = end_time.strftime(datetime_format)
+
+    while datetime.datetime.now() < end_time:
+        curr_time = datetime.datetime.now()
+        curr_time_str = curr_time.strftime(datetime_format)
+
+        progress_sec = (curr_time - start_time).total_seconds()
+        progress_percent = progress_sec / duration_seconds
+        num_total_bars = 5
+        num_finished_bars = round(progress_percent * num_total_bars)
+        num_remaining_bars = num_total_bars - num_finished_bars
+        bars = ["#"] * num_finished_bars + [" "] * num_remaining_bars
+        bars_str = "".join(bars)
+
+        print("\r{} | {}: [{}] : {}".format(curr_time_str, end_time_str, bars_str, message), end="")
         time.sleep(1)
