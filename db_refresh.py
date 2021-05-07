@@ -31,13 +31,13 @@ def _clear_db(dist_id_to_refresh):
 
 def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = get_dist_vaccination_calendar(dist_id_to_refresh)
+    slots = sorted(slots, key=lambda x: x["capacity_18_above"], reverse=True)
     slots = slots[0:5]
 
     if _should_write_to_db() and len(slots) > 0:
-        for slot in slots:
-            slot["update_ts"] = firestore.SERVER_TIMESTAMP
 
-        document = {"vaccine_slots": slots}
+        document = {"vaccine_slots": slots,
+                    "update_ts": firestore.SERVER_TIMESTAMP}
         key = _get_slot_document_key(dist_id_to_refresh)
         doc_ref = db.collection(u'slots').document(key)
         doc_ref.set(document)
@@ -59,10 +59,10 @@ def _refresh_slots(dist_id_to_refresh, dist_info_dict):
 
 
 def _refresh_and_get_dist_info_list():
-    api_dist_info_list = get_all_dist_codes_db()
+    api_dist_info_list = get_all_dist_codes_api()
 
     # update in firebase
-    if _should_write_to_db():
+    if _should_write_to_db() or True:
         api_dist_info_list = get_all_dist_codes_api()
         api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
         doc_ref = db.collection(u'static').document(u'dist_info')

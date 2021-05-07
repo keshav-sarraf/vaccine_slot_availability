@@ -44,7 +44,7 @@ def _get_slot_document_key(dist_id):
     return "dist_{}".format(dist_id)
 
 
-@lru_cache()
+@cachetools.func.ttl_cache(maxsize=1, ttl=10 * 60 * 60)
 def get_all_dist_codes_db():
     doc_ref = db.collection(u'static').document(u'dist_info')
     document = doc_ref.get().to_dict()
@@ -74,11 +74,14 @@ def get_slots_by_dist_id_db(dist_id):
         db_slots = slots_doc.to_dict()["vaccine_slots"]
 
         datetime_format = "%d-%m-%Y %H:%M:%S"
+        update_ts = slots_doc.to_dict()["update_ts"]
+        update_ts = update_ts.astimezone(timezone('Asia/Kolkata'))
+        update_ts = update_ts.strftime(datetime_format)
+
         res_slots = []
 
         for slot in db_slots:
-            slot["update_ts"] = slot["update_ts"].astimezone(timezone('Asia/Kolkata'))
-            slot["update_ts"] = slot["update_ts"].strftime(datetime_format)
+            slot["update_ts"] = update_ts
             res_slots.append(slot)
 
         return res_slots
