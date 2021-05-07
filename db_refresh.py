@@ -10,6 +10,8 @@ from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_
     get_all_dist_codes_db
 
 # on every 3rd refresh cycle db would be updated, but notification is sent all the time
+from utils import sleep_with_activity
+
 NUM_DATA_REFRESHED = 1
 WAIT_TIME_HRS = 0.5
 NUM_ATTEMPTS_TO_DB_UPDATE = 5
@@ -18,6 +20,7 @@ BASE_DELAY = 30
 
 
 def _should_write_to_db():
+    # need this to keep the db reads and writes to a minimum owing to free tier limitations in firebase
     return NUM_DATA_REFRESHED % NUM_ATTEMPTS_TO_DB_UPDATE == 0
 
 
@@ -35,7 +38,6 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = slots[0:5]
 
     if _should_write_to_db() and len(slots) > 0:
-
         document = {"vaccine_slots": slots,
                     "update_ts": firestore.SERVER_TIMESTAMP}
         key = _get_slot_document_key(dist_id_to_refresh)
@@ -59,10 +61,10 @@ def _refresh_slots(dist_id_to_refresh, dist_info_dict):
 
 
 def _refresh_and_get_dist_info_list():
-    api_dist_info_list = get_all_dist_codes_api()
+    api_dist_info_list = get_all_dist_codes_db()
 
     # update in firebase
-    if _should_write_to_db() or True:
+    if _should_write_to_db():
         api_dist_info_list = get_all_dist_codes_api()
         api_dist_info_list = sorted(api_dist_info_list, key=lambda x: x["state_name"])
         doc_ref = db.collection(u'static').document(u'dist_info')
@@ -98,11 +100,9 @@ while True:
 
             time.sleep(10 + random.random() * 5)
 
-        print("{} : Done with refresh, will sleep for {} hr".format(datetime.datetime.now(),
-                                                                    WAIT_TIME_HRS))
         refreshed_districts = dict()
-        time.sleep(WAIT_TIME_HRS * 60 * 60)
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
+        sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
     except Exception as e:
         print(e)
         print("something failed, waiting for {} s".format(delay))
