@@ -65,7 +65,7 @@ def get_dist_name_from_id_db(dist_id):
     return name_code_dict.get(dist_id)
 
 
-@lru_cache(maxsize=300)
+@cachetools.func.ttl_cache(maxsize=300, ttl=10 * 60)
 def get_slots_by_dist_id_db(dist_id):
     key = _get_slot_document_key(dist_id)
     slots_doc = db.collection(u'slots').document(key).get()

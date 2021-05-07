@@ -87,7 +87,7 @@ def get_all_dist_codes_api():
             except Exception as e:
                 print(e)
                 print("unable to get dist info attempt {}".format(i))
-                time.sleep(3*60 + random.random() * 30)
+                time.sleep(3 * 60 + random.random() * 30)
 
         if not success:
             raise Exception("Unable to get dist info for state {}".format(state["state_name"]))
@@ -125,6 +125,8 @@ def get_dist_vaccination_calendar_by_date(dist_id, date, user_agent=user_agent_r
 
     slots = []
 
+    if "centers" not in data:
+        print(data)
     # print(data)
 
     for center_info in data["centers"]:
@@ -179,4 +181,5 @@ def get_dist_vaccination_calendar(dist_id):
 
     return slots
 
-# print(get_dist_vaccination_calendar("512")[0])
+
+# print(get_dist_vaccination_calendar(363))

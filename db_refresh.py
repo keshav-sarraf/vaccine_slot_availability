@@ -1,6 +1,7 @@
 import datetime
 import time
 import random
+import traceback
 
 from firebase_admin import firestore
 from tqdm import tqdm
@@ -9,7 +10,6 @@ from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_all_subscribed_dists_from_db, \
     get_all_dist_codes_db
 
-# on every 3rd refresh cycle db would be updated, but notification is sent all the time
 from utils import sleep_with_activity
 
 NUM_DATA_REFRESHED = 1
@@ -18,6 +18,7 @@ NUM_ATTEMPTS_TO_DB_UPDATE = (24 / WAIT_TIME_HRS) / 8
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
 
+# notification is sent once an hour only
 notifications_sent_dict = dict()
 
 
@@ -35,16 +36,15 @@ def _clear_db(dist_id_to_refresh):
 
 
 def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
-
     dist_name = dist_info_dict["dist_name"]
     date = slot["date"]
     num_slots = slot["capacity_18_above"]
 
     now = datetime.datetime.now()
     last_sent_on = notifications_sent_dict.get(dist_id_to_refresh,
-                                               default=now - datetime.timedelta(hours=10))
+                                               now - datetime.timedelta(hours=10))
 
-    if (now - last_sent_on).total_seconds() > 2 * 60 * 60:
+    if (now - last_sent_on).total_seconds() > 1 * 60 * 60:
         notify_all_subscribers(dist_id_to_refresh, dist_name, date, num_slots)
         notifications_sent_dict[dist_id_to_refresh] = now
     else:
@@ -56,7 +56,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = sorted(slots, key=lambda x: x["capacity_18_above"], reverse=True)
     slots = slots[0:5]
 
-    if _should_write_to_db() and len(slots) > 0:
+    if True and len(slots) > 0: # if _should_write_to_db() and len(slots) > 0:
         document = {"vaccine_slots": slots,
                     "update_ts": firestore.SERVER_TIMESTAMP}
         key = _get_slot_document_key(dist_id_to_refresh)
@@ -118,7 +118,7 @@ while True:
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
         sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         print("something failed, waiting for {} s".format(delay))
         time.sleep(delay)
         delay = delay * EXP_DELAY_FACTOR

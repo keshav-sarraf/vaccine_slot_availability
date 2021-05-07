@@ -25,10 +25,10 @@ def sleep_with_activity(message, duration_seconds):
         curr_time = datetime.datetime.now()
         curr_time_str = curr_time.strftime(datetime_format)
 
-        progress_sec = (curr_time - start_time).total_seconds()
-        progress_percent = progress_sec / duration_seconds
-        num_total_bars = 5
-        num_finished_bars = round(progress_percent * num_total_bars)
+        progress_sec = (curr_time - start_time).total_seconds() + 2
+        progress_percent = min(1.0, progress_sec / duration_seconds)
+        num_total_bars = 10
+        num_finished_bars = floor(progress_percent * num_total_bars)
         num_remaining_bars = num_total_bars - num_finished_bars
         bars = ["#"] * num_finished_bars + [" "] * num_remaining_bars
         bars_str = "".join(bars)
