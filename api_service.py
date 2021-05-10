@@ -119,6 +119,7 @@ def get_dist_vaccination_calendar_by_date(dist_id, date, user_agent=user_agent_r
     response = requests.get(url, params=params, headers=headers)
 
     if response.status_code != 200:
+        print("Non 200 data received for dist_id {} date {}".format(dist_id, date))
         print(response.text)
 
     data = response.json()
@@ -126,10 +127,11 @@ def get_dist_vaccination_calendar_by_date(dist_id, date, user_agent=user_agent_r
     slots = []
 
     if "centers" not in data:
+        print("Invalid data received for dist_id {} date {}".format(dist_id, date))
         print(data)
     # print(data)
 
-    for center_info in data["centers"]:
+    for center_info in data.get("centers", []):
         slot_info = {
             "center_id": center_info["center_id"],
             "center_name": center_info["name"],

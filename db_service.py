@@ -141,6 +141,7 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
     )
 
     response = messaging.send(message)
+    print("Notifying : {} ... Response : {}".format(dist_name, str(response)))
     return response
 
 

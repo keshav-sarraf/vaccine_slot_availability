@@ -1,4 +1,5 @@
 import datetime
+import os
 import time
 import random
 import traceback
@@ -12,8 +13,11 @@ from db_service import _get_slot_document_key, notify_all_subscribers, db, _get_
 
 from utils import sleep_with_activity
 
+os.environ['TZ'] = 'Asia/Kolkata'
+time.tzset()
+
 NUM_DATA_REFRESHED = 1
-WAIT_TIME_HRS = 10 / 60
+WAIT_TIME_HRS = 2 / 60
 NUM_ATTEMPTS_TO_DB_UPDATE = (24 / WAIT_TIME_HRS) / 8
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
@@ -35,6 +39,25 @@ def _clear_db(dist_id_to_refresh):
     return
 
 
+def _add_to_trends(dist_id_to_refresh, dist_name, num_slots):
+    # Add to trends
+    key = _get_slot_document_key(dist_id_to_refresh)
+    doc_ref = db.collection(u'trend').document(key)
+    now = datetime.datetime.now()
+
+    datetime_format = "%d-%m-%Y %H:%M:%S"
+
+    entry = {
+        "dist_name": dist_name,
+        "ts": now.strftime(datetime_format),
+        "num_slots": num_slots}
+
+    if doc_ref.get().exists:
+        doc_ref.update({"past": firestore.ArrayUnion([entry])})
+    else:
+        doc_ref.set({"past": [entry]})
+
+
 def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
     dist_name = dist_info_dict["dist_name"]
     date = slot["date"]
@@ -44,11 +67,13 @@ def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
     last_sent_on = notifications_sent_dict.get(dist_id_to_refresh,
                                                now - datetime.timedelta(hours=10))
 
-    if (now - last_sent_on).total_seconds() > 1 * 60 * 60:
+    if (now - last_sent_on).total_seconds() > 0.5 * 60 * 60:
         notify_all_subscribers(dist_id_to_refresh, dist_name, date, num_slots)
         notifications_sent_dict[dist_id_to_refresh] = now
     else:
-        print("Not notifying since last notification was sent on {}".format(last_sent_on))
+        print("{} Not notifying since last notification was sent on {}".format(now, last_sent_on))
+
+    _add_to_trends(dist_id_to_refresh, dist_name, num_slots)
 
 
 def _add_slots(dist_id_to_refresh, dist_info_dict):
@@ -56,7 +81,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = sorted(slots, key=lambda x: x["capacity_18_above"], reverse=True)
     slots = slots[0:5]
 
-    if True and len(slots) > 0: # if _should_write_to_db() and len(slots) > 0:
+    if len(slots) > 0:  # if _should_write_to_db() and len(slots) > 0:
         document = {"vaccine_slots": slots,
                     "update_ts": firestore.SERVER_TIMESTAMP}
         key = _get_slot_document_key(dist_id_to_refresh)
@@ -64,7 +89,7 @@ def _add_slots(dist_id_to_refresh, dist_info_dict):
         doc_ref.set(document)
 
     # send notification
-    if len(slots) >= 1:
+    if len(slots) > 0:
         info = "{} | {} | {} ".format(dist_info_dict["state_name"], dist_info_dict["dist_name"], len(slots))
         print(info)
         _send_notification(dist_id_to_refresh, dist_info_dict, slots[0])
@@ -116,6 +141,7 @@ while True:
 
         refreshed_districts = dict()
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
+        print("num data refreshed : {}".format(NUM_DATA_REFRESHED))
         sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
     except Exception as e:
         print(traceback.format_exc())
