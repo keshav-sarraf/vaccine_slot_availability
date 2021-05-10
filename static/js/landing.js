@@ -259,7 +259,7 @@ function createTrendChart(trendData){
     var data = {
           datasets: [
             {
-              label: 'Past Slot Availability',
+              label: 'Trend in Slot Availability',
               data: formattedData,
               borderColor: 'blue',
               backgroundColor: 'blue',

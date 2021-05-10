@@ -146,7 +146,7 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
     return response
 
 
-@cachetools.func.ttl_cache(maxsize=200, ttl=10 * 60 * 60)
+@cachetools.func.ttl_cache(maxsize=200, ttl=1 * 60 * 60)
 def get_trend_for_dist_id(dist_id):
     key = _get_slot_document_key(dist_id)
     doc_ref = db.collection(u'trend').document(key).get()
