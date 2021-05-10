@@ -17,7 +17,7 @@ os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
 NUM_DATA_REFRESHED = 1
-WAIT_TIME_HRS = 2 / 60
+WAIT_TIME_HRS = 1 / 60
 NUM_ATTEMPTS_TO_DB_UPDATE = 200
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
@@ -61,12 +61,18 @@ def push_trends_to_db():
     print("Pushing Trends to DB")
 
     for key, trend_data in trends_dict.items():
+
+        print(key)
+        print(trend_data)
+
         doc_ref = db.collection(u'trend').document(key)
 
         if doc_ref.get().exists:
             doc_ref.update({"past": firestore.ArrayUnion(trend_data)})
         else:
             doc_ref.set({"past": trend_data})
+
+    trends_dict.clear()
 
 
 def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
@@ -153,7 +159,7 @@ while True:
         refreshed_districts = dict()
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
 
-        if NUM_DATA_REFRESHED % 5 == 0:
+        if NUM_DATA_REFRESHED % 2 == 0:
             push_trends_to_db()
 
         print("num data refreshed : {}".format(NUM_DATA_REFRESHED))

@@ -115,7 +115,7 @@ def delete_subscriber_from_topic(token, dist_id):
 def send_test_notification(token, dist_name):
     time.sleep(6)
     title = "Test Notification"
-    body = "We will notify you when slots would be available in {}".format(dist_name)
+    body = "This is how we will notify you when slots would be available in {}".format(dist_name)
 
     message = messaging.Message(
         notification=messaging.Notification(
