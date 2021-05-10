@@ -153,7 +153,7 @@ while True:
         refreshed_districts = dict()
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
 
-        if NUM_DATA_REFRESHED % 5:
+        if NUM_DATA_REFRESHED % 5 == 0:
             push_trends_to_db()
 
         print("num data refreshed : {}".format(NUM_DATA_REFRESHED))

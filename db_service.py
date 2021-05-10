@@ -159,7 +159,7 @@ def get_trend_for_dist_id(dist_id):
         time_str = data["ts"]
         num_slots = data["num_slots"]
         datetime_obj = datetime.datetime.strptime(time_str, datetime_format)
-        time_hour = datetime_obj.hour + datetime_obj.minute / 60
+        time_hour = datetime_obj.hour + round(datetime_obj.minute / 60, 1)
         response.append({"ts": time_str,
                          "ts_hour": time_hour,
                          "num_slots": num_slots})
