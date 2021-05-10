@@ -18,12 +18,13 @@ time.tzset()
 
 NUM_DATA_REFRESHED = 1
 WAIT_TIME_HRS = 2 / 60
-NUM_ATTEMPTS_TO_DB_UPDATE = (24 / WAIT_TIME_HRS) / 8
+NUM_ATTEMPTS_TO_DB_UPDATE = 200
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
 
 # notification is sent once an hour only
 notifications_sent_dict = dict()
+trends_dict = dict()
 
 
 def _should_write_to_db():
@@ -42,7 +43,6 @@ def _clear_db(dist_id_to_refresh):
 def _add_to_trends(dist_id_to_refresh, dist_name, num_slots):
     # Add to trends
     key = _get_slot_document_key(dist_id_to_refresh)
-    doc_ref = db.collection(u'trend').document(key)
     now = datetime.datetime.now()
 
     datetime_format = "%d-%m-%Y %H:%M:%S"
@@ -52,10 +52,21 @@ def _add_to_trends(dist_id_to_refresh, dist_name, num_slots):
         "ts": now.strftime(datetime_format),
         "num_slots": num_slots}
 
-    if doc_ref.get().exists:
-        doc_ref.update({"past": firestore.ArrayUnion([entry])})
-    else:
-        doc_ref.set({"past": [entry]})
+    in_memory_trends = trends_dict.get(key, [])
+    in_memory_trends.append(entry)
+    trends_dict[key] = in_memory_trends
+
+
+def push_trends_to_db():
+    print("Pushing Trends to DB")
+
+    for key, trend_data in trends_dict.items():
+        doc_ref = db.collection(u'trend').document(key)
+
+        if doc_ref.get().exists:
+            doc_ref.update({"past": firestore.ArrayUnion(trend_data)})
+        else:
+            doc_ref.set({"past": trend_data})
 
 
 def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
@@ -141,6 +152,10 @@ while True:
 
         refreshed_districts = dict()
         NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
+
+        if NUM_DATA_REFRESHED % 5:
+            push_trends_to_db()
+
         print("num data refreshed : {}".format(NUM_DATA_REFRESHED))
         sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
     except Exception as e:

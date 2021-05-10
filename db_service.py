@@ -1,4 +1,5 @@
 import base64
+import datetime
 import json
 import os
 import time
@@ -142,6 +143,27 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
 
     response = messaging.send(message)
     print("Notifying : {} ... Response : {}".format(dist_name, str(response)))
+    return response
+
+
+@cachetools.func.ttl_cache(maxsize=200, ttl=10 * 60 * 60)
+def get_trend_for_dist_id(dist_id):
+    key = _get_slot_document_key(dist_id)
+    doc_ref = db.collection(u'trend').document(key).get()
+
+    past_data = doc_ref.to_dict().get("past", []) if doc_ref.exists else []
+    datetime_format = "%d-%m-%Y %H:%M:%S"
+
+    response = []
+    for data in past_data:
+        time_str = data["ts"]
+        num_slots = data["num_slots"]
+        datetime_obj = datetime.datetime.strptime(time_str, datetime_format)
+        time_hour = datetime_obj.hour + datetime_obj.minute / 60
+        response.append({"ts": time_str,
+                         "ts_hour": time_hour,
+                         "num_slots": num_slots})
+
     return response
 
 

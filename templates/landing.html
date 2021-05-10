@@ -100,6 +100,10 @@
         </div>
     </div>
 
+    <div class="container border mt-5 mb-5 p-2" id="chart-div">
+        <canvas class="w-20 h-10 d-inline-block" id="slotsTrendChart" ></canvas>
+    </div>
+
     <div class="container">
         <p class="lead">
             <a href="https://github.com/keshav-sarraf/vaccine_slot_availability">github link :)</a>
@@ -126,7 +130,9 @@
 <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-analytics.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-messaging.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js"></script>
 <script defer type=text/javascript src="{{url_for('static', filename='js/landing.js') }}"></script>
+
 
 
 </body>

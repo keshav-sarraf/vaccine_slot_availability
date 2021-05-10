@@ -2,6 +2,8 @@ console.log("Landing Page.JS Called");
 
 var selectedDistrict = null;
 var selectedState = null;
+var slotsTrendChart = null;
+var slotsTrendChartCtx = document.getElementById('slotsTrendChart').getContext('2d');
 
 function refreshTable(selectedDistrict){
     $.get("/slots/district/" + selectedDistrict, function(response){
@@ -31,6 +33,8 @@ $('.basicAutoComplete').on('autocomplete.select', function (evt, item) {
     $("#slots-table").bootstrapTable('destroy');
     refreshTable(selectedDistrict);
     $("#subscription-div").show();
+
+    manageTrendChart();
 });
 
 $("#subscribeBtn").click(function(){
@@ -181,6 +185,7 @@ function initFCM(){
 $(".toast").toast({ autohide: false });
 $("#slots-table").hide();
 $("#subscription-div").hide();
+$("#chart-div").hide();
 
 //Firebase related stuff
 var firebaseConfig = {
@@ -216,3 +221,110 @@ function saveToken(token){
 function getToken(){
     return window.localStorage.getItem('myToken');
 }
+
+//Charting stuff
+
+//top level fn which gets called on autocomplete change
+function manageTrendChart(distName){
+    $("#chart-div").hide();
+    fetchTrendData(distName);
+}
+
+//fetch data
+function fetchTrendData(distName){
+    $.get("/trend/district/" + selectedDistrict, function(response){
+        if(response != null && response.length > 0){
+            console.log("trend data");
+            $("#chart-div").show();
+            displayTrendChart(response);
+        }
+    });
+}
+
+//controller to decide if to create chart or update it
+function displayTrendChart(trendData){
+ if(slotsTrendChart == null){
+    createTrendChart(trendData);
+ } else {
+    updateTrendChart(trendData);
+ }
+}
+
+//function create chart
+function createTrendChart(trendData){
+    formattedData = [];
+    for(var i = 0; i<=trendData.length-1; i++)
+        formattedData.push({x: trendData[i].ts_hour, y:trendData[i].num_slots});
+
+    var data = {
+          datasets: [
+            {
+              label: 'Past Slot Availability',
+              data: formattedData,
+              borderColor: 'blue',
+              backgroundColor: 'blue',
+            },
+          ]
+        };
+
+    slotsTrendChart = new Chart(slotsTrendChartCtx, {
+        type: 'scatter',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Chart.js Scatter Chart'
+                }
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time in 24Hr format'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '#Available Slots'
+                    }
+                }]
+            }
+        }
+    });
+}
+
+//function update chart
+function updateTrendChart(trendData){
+    console.log("update trend chart");
+
+    formattedData = [];
+    for(var i = 0; i<=trendData.length-1; i++)
+        formattedData.push({x: trendData[i].ts_hour, y:trendData[i].num_slots});
+
+    console.log(formattedData);
+
+    var data = {
+          datasets: [
+            {
+              label: 'Past Slot Availability',
+              data: formattedData,
+              borderColor: 'blue',
+              backgroundColor: 'blue',
+            },
+          ]
+        };
+
+    slotsTrendChart.data = data;
+    slotsTrendChart.update();
+}
+
+
+

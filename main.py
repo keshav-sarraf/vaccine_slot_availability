@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 
 from api_service import get_all_dist_codes_api
 from db_service import add_subscriber_to_topic, get_all_dist_codes_db, get_slots_by_dist_id_db, \
-    get_dist_id_from_name_db, delete_subscriber_from_topic, send_test_notification
+    get_dist_id_from_name_db, delete_subscriber_from_topic, send_test_notification, get_trend_for_dist_id
 from utils import get_filtered_dists
 
 app = Flask(__name__, static_url_path='/static')
@@ -71,6 +71,12 @@ def test_notification():
 
     return jsonify(result)
 
+
+@app.route('/trend/district/<dist_name>')
+def get_trend_for_dist(dist_name):
+    dist_id = get_dist_id_from_name_db(dist_name)
+    trend = get_trend_for_dist_id(dist_id)
+    return jsonify(trend)
 
 '''
 for notification:
