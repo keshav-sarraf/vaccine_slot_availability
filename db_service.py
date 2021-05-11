@@ -154,15 +154,24 @@ def get_trend_for_dist_id(dist_id):
     past_data = doc_ref.to_dict().get("past", []) if doc_ref.exists else []
     datetime_format = "%d-%m-%Y %H:%M:%S"
 
-    response = []
+    today = datetime.datetime.now().date()
+
+    response = dict()
     for data in past_data:
         time_str = data["ts"]
         num_slots = data["num_slots"]
         datetime_obj = datetime.datetime.strptime(time_str, datetime_format)
-        time_hour = datetime_obj.hour + round(datetime_obj.minute / 60, 1)
-        response.append({"ts": time_str,
-                         "ts_hour": time_hour,
-                         "num_slots": num_slots})
+        today_date = datetime.datetime.now().date()
+        forced_ts = datetime.datetime.combine(today_date, datetime_obj.time())
+        delta_days = (today - datetime_obj.date()).days
+
+        if delta_days > 6:
+            continue
+
+        array = response.get(delta_days, [])
+        array.append({"ts": forced_ts.timestamp(),  # datetime_obj.time().strftime("%H:%M:%S"),
+                      "num_slots": num_slots})
+        response[delta_days] = array
 
     return response
 

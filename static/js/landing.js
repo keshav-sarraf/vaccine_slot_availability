@@ -233,8 +233,9 @@ function manageTrendChart(distName){
 //fetch data
 function fetchTrendData(distName){
     $.get("/trend/district/" + selectedDistrict, function(response){
-        if(response != null && response.length > 0){
-            console.log("trend data");
+        trendDays = Object.keys(response);
+        if(response != null && trendDays.length > 0){
+            //console.log("trend data");
             $("#chart-div").show();
             displayTrendChart(response);
         }
@@ -244,27 +245,19 @@ function fetchTrendData(distName){
 //controller to decide if to create chart or update it
 function displayTrendChart(trendData){
  if(slotsTrendChart == null){
+    console.log("create");
     createTrendChart(trendData);
  } else {
+    console.log("update");
     updateTrendChart(trendData);
  }
 }
 
 //function create chart
 function createTrendChart(trendData){
-    formattedData = [];
-    for(var i = 0; i<=trendData.length-1; i++)
-        formattedData.push({x: trendData[i].ts_hour, y:trendData[i].num_slots});
 
     var data = {
-          datasets: [
-            {
-              label: 'Trend in Slot Availability',
-              data: formattedData,
-              borderColor: 'blue',
-              backgroundColor: 'blue',
-            },
-          ]
+          datasets: getDatasetFromResponse(trendData)
         };
 
     slotsTrendChart = new Chart(slotsTrendChartCtx, {
@@ -272,6 +265,9 @@ function createTrendChart(trendData){
         data: data,
         options: {
             responsive: true,
+            tooltips: {
+                enabled: false,
+            },
             plugins: {
                 legend: {
                     position: 'top',
@@ -284,9 +280,13 @@ function createTrendChart(trendData){
             scales: {
                 xAxes: [{
                     display: true,
+                    type: 'time',
+                    time: {
+                        unit: 'minute'
+                    },
                     scaleLabel: {
                         display: true,
-                        labelString: 'Time in 24Hr format'
+                        labelString: 'Time'
                     }
                 }],
                 yAxes: [{
@@ -305,25 +305,58 @@ function createTrendChart(trendData){
 function updateTrendChart(trendData){
     console.log("update trend chart");
 
-    formattedData = [];
-    for(var i = 0; i<=trendData.length-1; i++)
-        formattedData.push({x: trendData[i].ts_hour, y:trendData[i].num_slots});
-
-    console.log(formattedData);
-
     var data = {
-          datasets: [
-            {
-              label: 'Past Slot Availability',
-              data: formattedData,
-              borderColor: 'blue',
-              backgroundColor: 'blue',
-            },
-          ]
+          datasets: getDatasetFromResponse(trendData)
         };
 
     slotsTrendChart.data = data;
     slotsTrendChart.update();
+}
+
+function getDatasetFromResponse(trendData){
+    datasets = [];
+
+    numDaysinPast = Object.keys(trendData);
+
+    backgroundColors = [
+                'rgba(128,128,128, 0.2)',
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ];
+    borderColor = [
+                'rgba(128,128,128, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ];
+
+    for(var i=0; i<numDaysinPast.length; i++){
+        daysAgo = numDaysinPast[i];
+        label = daysAgo == 0 ? "Today" : daysAgo + " day ago";
+        dataArr = trendData[daysAgo];
+
+        formattedData = [];
+        for(var j = 0; j<dataArr.length; j++)
+            formattedData.push({x: new Date(dataArr[j].ts * 1000), y:dataArr[j].num_slots});
+
+        dataset = {
+            label: label,
+            data: formattedData,
+            borderColor: borderColor[i%6],
+            backgroundColor: backgroundColors[i%6],
+            };
+
+        datasets.push(dataset);
+    }
+
+    return datasets;
 }
 
 
