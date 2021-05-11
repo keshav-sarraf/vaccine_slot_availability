@@ -17,6 +17,8 @@ from pytz import timezone
 
 from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 
+os.environ['TZ'] = 'Asia/Kolkata'
+time.tzset()
 
 def _get_firebase_credentials():
     if 'FIREBASE_CONFIG_BASE64' in os.environ:

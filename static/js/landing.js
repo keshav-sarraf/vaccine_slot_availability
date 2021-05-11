@@ -352,7 +352,7 @@ function getDatasetFromResponse(trendData){
 
         formattedData = [];
         for(var j = 0; j<dataArr.length; j++)
-            formattedData.push({x: new Date(dataArr[j].ts * 1000 - 5.5 * 3600 * 1000),
+            formattedData.push({x: new Date(dataArr[j].ts * 1000),
                                 y: dataArr[j].num_slots
                                 });
 

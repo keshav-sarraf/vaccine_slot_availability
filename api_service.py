@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import time
 from datetime import datetime, timedelta
@@ -12,6 +13,9 @@ from random_user_agent.params import SoftwareName, OperatingSystem
 # logging.basicConfig(level=logging.DEBUG)
 # https://stackoverflow.com/questions/27652543/how-to-use-python-requests-to-fake-a-browser-visit-a-k-a-and-generate-user-agent
 from tqdm import tqdm
+
+os.environ['TZ'] = 'Asia/Kolkata'
+time.tzset()
 
 resp = requests.get("http://ip-api.com/json")
 print(resp.json())
