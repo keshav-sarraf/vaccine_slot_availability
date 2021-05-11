@@ -339,12 +339,22 @@ function getDatasetFromResponse(trendData){
 
     for(var i=0; i<numDaysinPast.length; i++){
         daysAgo = numDaysinPast[i];
-        label = daysAgo == 0 ? "Today" : daysAgo + " day ago";
+
+        if (daysAgo == 0)
+            label = "Today";
+        else if (daysAgo == 1)
+            label = "Yesterday";
+        else
+            label = daysAgo + " Days Ago";
+
+        //label = daysAgo == 0 ? "Today" : daysAgo + " day ago";
         dataArr = trendData[daysAgo];
 
         formattedData = [];
         for(var j = 0; j<dataArr.length; j++)
-            formattedData.push({x: new Date(dataArr[j].ts * 1000 - 5.5 * 3600 * 1000), y:dataArr[j].num_slots});
+            formattedData.push({x: new Date(dataArr[j].ts * 1000 - 5.5 * 3600 * 1000),
+                                y: dataArr[j].num_slots
+                                });
 
         dataset = {
             label: label,
