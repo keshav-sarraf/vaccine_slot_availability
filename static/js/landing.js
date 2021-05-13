@@ -261,7 +261,7 @@ function createTrendChart(trendData){
         };
 
     slotsTrendChart = new Chart(slotsTrendChartCtx, {
-        type: 'scatter',
+        type: 'line',
         data: data,
         options: {
             responsive: true,
