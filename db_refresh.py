@@ -131,41 +131,42 @@ def _refresh_and_get_dist_info_list():
     return api_dist_info_list
 
 
-delay = BASE_DELAY
-refreshed_districts = dict()
-while True:
+if __name__ == "__main__":
+    delay = BASE_DELAY
+    refreshed_districts = dict()
+    while True:
 
-    subscribed_dists_list = _get_all_subscribed_dists_from_db()
+        subscribed_dists_list = _get_all_subscribed_dists_from_db()
 
-    try:
-        pbar = tqdm(_refresh_and_get_dist_info_list())
-        for dist_info in pbar:
-            pbar.set_description("Refreshing {} | {} ".format(dist_info["state_name"], dist_info["dist_name"]))
-            dist_id = dist_info["dist_id"]
+        try:
+            pbar = tqdm(_refresh_and_get_dist_info_list())
+            for dist_info in pbar:
+                pbar.set_description("Refreshing {} | {} ".format(dist_info["state_name"], dist_info["dist_name"]))
+                dist_id = dist_info["dist_id"]
 
-            if dist_id in refreshed_districts:
-                continue
+                if dist_id in refreshed_districts:
+                    continue
 
-            if dist_id not in subscribed_dists_list:
-                continue
+                if dist_id not in subscribed_dists_list:
+                    continue
 
-            _refresh_slots(dist_id, dist_info)
-            refreshed_districts[dist_id] = True
-            delay = BASE_DELAY
-            # print(refreshed_dicts)
+                _refresh_slots(dist_id, dist_info)
+                refreshed_districts[dist_id] = True
+                delay = BASE_DELAY
+                # print(refreshed_dicts)
 
-            time.sleep(10 + random.random() * 5)
+                time.sleep(10 + random.random() * 5)
 
-        refreshed_districts = dict()
-        NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
+            refreshed_districts = dict()
+            NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
 
-        if NUM_DATA_REFRESHED % 2 == 0:
-            push_trends_to_db()
+            if NUM_DATA_REFRESHED % 2 == 0:
+                push_trends_to_db()
 
-        print("num data refreshed : {}".format(NUM_DATA_REFRESHED))
-        sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
-    except Exception as e:
-        print(traceback.format_exc())
-        print("something failed, waiting for {} s".format(delay))
-        time.sleep(delay)
-        delay = delay * EXP_DELAY_FACTOR
+            print("num data refreshed : {}".format(NUM_DATA_REFRESHED))
+            sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
+        except Exception as e:
+            print(traceback.format_exc())
+            print("something failed, waiting for {} s".format(delay))
+            time.sleep(delay)
+            delay = delay * EXP_DELAY_FACTOR

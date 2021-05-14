@@ -124,7 +124,8 @@ def get_dist_vaccination_calendar_by_date(dist_id, date, user_agent=user_agent_r
 
     if response.status_code != 200:
         print("Non 200 data received for dist_id {} date {}".format(dist_id, date))
-        print(response.text)
+        # print(response.text)
+        raise Exception("Couldn't get slots for {}".format(dist_id))
 
     data = response.json()
 
