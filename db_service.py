@@ -20,6 +20,7 @@ from api_service import get_all_dist_codes_api, get_dist_vaccination_calendar
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
+
 def _get_firebase_credentials():
     if 'FIREBASE_CONFIG_BASE64' in os.environ:
         # created encoded config and saved in var in heroku
@@ -152,9 +153,10 @@ def notify_all_subscribers(dist_id, dist_name, date, num_slots):
 def get_trend_for_dist_id(dist_id):
     key = _get_slot_document_key(dist_id)
     doc_ref = db.collection(u'trend').document(key).get()
+    datetime_format = "%d-%m-%Y %H:%M:%S"
 
     past_data = doc_ref.to_dict().get("past", []) if doc_ref.exists else []
-    datetime_format = "%d-%m-%Y %H:%M:%S"
+    past_data = list(sorted(past_data, key=lambda x: datetime.datetime.strptime(x["ts"], datetime_format)))
 
     today = datetime.datetime.now().date()
 
