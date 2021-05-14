@@ -81,12 +81,11 @@ if __name__ == '__main__':
     while True:
         try:
             main()
-            time.sleep(10 + random.random() * 5)
 
             NUM_DATA_REFRESHED = NUM_DATA_REFRESHED + 1
 
-            # if NUM_DATA_REFRESHED % 2 == 0:
-            #     push_trends_to_db()
+            if NUM_DATA_REFRESHED % 2 == 0:
+                push_trends_to_db()
 
             print("num data refreshed : {}".format(NUM_DATA_REFRESHED))
             sleep_with_activity("done for now, will refresh in a bit", WAIT_TIME_HRS * 60 * 60)
