@@ -17,7 +17,7 @@ os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
 NUM_DATA_REFRESHED = 1
-WAIT_TIME_HRS = 1 / 60
+WAIT_TIME_HRS = 0.25 / 60
 NUM_ATTEMPTS_TO_DB_UPDATE = 200
 EXP_DELAY_FACTOR = 2
 BASE_DELAY = 30
@@ -96,6 +96,8 @@ def _send_notification(dist_id_to_refresh, dist_info_dict, slot):
 def _add_slots(dist_id_to_refresh, dist_info_dict):
     slots = get_dist_vaccination_calendar(dist_id_to_refresh)
     slots = sorted(slots, key=lambda x: x["capacity_18_above"], reverse=True)
+    date_today = datetime.datetime.now().strftime('%d%b')
+    slots = list(filter(lambda x: x["date"] != date_today, slots))
     slots = slots[0:5]
 
     if len(slots) > 0:  # if _should_write_to_db() and len(slots) > 0:

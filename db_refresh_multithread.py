@@ -29,7 +29,7 @@ class SlotRefreshWorker(Thread):
     def run(self):
         while True:
 
-            time.sleep(random.random() * 80)
+            time.sleep(random.random() * 60)
 
             # Get the work from the queue and expand the tuple
             dist_info = self.queue.get()
@@ -43,7 +43,8 @@ class SlotRefreshWorker(Thread):
                     _refresh_slots(dist_id, dist_info)
                     break
                 except Exception as e:
-                    logger.error("unable to refresh {}, waiting for a minute".format(dist_info))
+                    logger.error("unable to refresh {}, waiting for a minute, \
+                    retries remaining {}".format(dist_info, retry_count_remaining))
                     retry_count_remaining -= 1
                     time.sleep(60)
 
@@ -62,7 +63,9 @@ def main():
         worker.start()
 
     # Put the tasks into the queue as a tuple
-    pbar = tqdm(_refresh_and_get_dist_info_list())
+    dist_info_list = _refresh_and_get_dist_info_list()
+    random.shuffle(dist_info_list)
+    pbar = tqdm(dist_info_list)
 
     for dist_info in pbar:
         dist_id = dist_info["dist_id"]
